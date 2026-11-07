@@ -103,7 +103,7 @@ export function reasonText(code: string, weather: string, mood: string) {
     case "liked_dish": return "You liked this dish before.";
     case "liked_cuisine": return "You often like this kind of food.";
     case "matches_request": return "It matches what you asked for.";
-    case "weather": return weather === "warm" ? "Light and fresh for a warm day." : "Warm and filling for a cold day.";
+    case "weather": return weather === "warm" ? "Light and fresh for a warm day." : weather === "rain" ? "Warm and comforting on a rainy day." : "Warm and filling for a cold day.";
     case "mood": return mood === "low" ? "Comforting when you feel low." : "Light and bright to match your mood.";
     default: return "Safe for you and close by.";
   }

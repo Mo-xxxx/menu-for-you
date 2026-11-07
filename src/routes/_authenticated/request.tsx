@@ -1,5 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { currentWeather } from "@/lib/maps.functions";
+import { useLocation } from "@/lib/use-location";
 import { toast } from "sonner";
 import { Cloud, Frown, Meh, Smile } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +33,15 @@ function RequestPage() {
   const [mode, setMode] = useState<"mood" | "speak">("mood");
   const [heard, setHeard] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const weather = estimateWeather();
+  const loc = useLocation();
+  const weatherFn = useServerFn(currentWeather);
+  const live = useQuery({
+    queryKey: ["weather", loc?.actual.lat.toFixed(2), loc?.actual.lng.toFixed(2)],
+    enabled: !!loc, staleTime: 15 * 60 * 1000,
+    queryFn: () => weatherFn({ data: { lat: loc!.actual.lat, lng: loc!.actual.lng } }),
+  });
+  const weather = live.data ?? estimateWeather();
+  const weatherNote = !loc || live.isLoading ? "Checking the weather…" : live.data ? weather.note : `${weather.note} (Live weather unavailable.)`;
 
   async function go(mood: string, text = "") {
     setBusy(true);
@@ -45,7 +57,7 @@ function RequestPage() {
   return (
     <Screen step={1} total={4} title={mode === "mood" ? "How are you feeling?" : "Say what you'd like"} onBack={mode === "speak" ? () => { setMode("mood"); setHeard(null); } : undefined}>
       <p className="flex items-center gap-3 rounded-xl border-2 border-foreground bg-card p-3 text-lg">
-        <Cloud aria-hidden className="size-7 shrink-0" /> {weather.note}
+        <Cloud aria-hidden className="size-7 shrink-0" /> <span aria-live="polite">{weatherNote}</span>
       </p>
       {mode === "mood" ? (
         <>

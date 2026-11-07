@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/Screen";
-import { AreaMap } from "@/components/AreaMap";
+import { LiveMap, type MapPlace } from "@/components/LiveMap";
+import { nearbyPlaces } from "@/lib/maps.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
@@ -37,15 +39,40 @@ function Nearby() {
     enabled: groups.length > 0,
     queryFn: async () => (await supabase.from("restaurants").select("id,name,lat,lng").in("id", groups.map((g) => g.id))).data ?? [],
   });
-  const ordered = groups.map((g) => coords?.find((c) => c.id === g.id)).filter(Boolean) as { id: string; name: string; lat: number; lng: number }[];
+  const radius = profile?.max_distance_m ?? 1500;
+  const placesFn = useServerFn(nearbyPlaces);
+  const live = useQuery({
+    queryKey: ["places", loc?.actual.lat.toFixed(3), loc?.actual.lng.toFixed(3), radius],
+    enabled: !!loc,
+    staleTime: 10 * 60 * 1000,
+    queryFn: () => placesFn({ data: { lat: loc!.actual.lat, lng: loc!.actual.lng, radius } }),
+  });
+  const safeNames = new Set(groups.map((g) => g.name.toLowerCase()));
+  const others = (live.data?.places ?? []).filter((p) => !safeNames.has(p.name.toLowerCase()));
+  const mapPlaces: MapPlace[] = useMemo(() => {
+    const showSample = loc?.real ?? false;
+    const a = showSample ? groups.map((g, i) => { const c = coords?.find((x) => x.id === g.id); return c ? { id: g.id, name: g.name, lat: c.lat, lng: c.lng, label: String(i + 1) } : null; }).filter(Boolean) as MapPlace[] : [];
+    const start = showSample ? groups.length : 0;
+    return [...a, ...others.map((p, i) => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, label: String(start + i + 1) }))];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groups, coords, live.data, loc?.real]);
+  const onSelect = useCallback((id: string) => setSelected(id), []);
   const sel = groups.find((g) => g.id === selected);
+  const selOther = others.find((p) => p.id === selected);
 
   return (
-    <Screen step={2} total={4} title={sel ? sel.name : "Places near you"} onBack={() => (sel ? setSelected(null) : navigate({ to: "/request" }))}>
+    <Screen step={2} total={4} title={sel ? sel.name : selOther ? selOther.name : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
       {isLoading || !loc ? <p role="status" className="text-xl">Finding safe food near you…</p>
         : error ? <p role="alert" className="text-xl text-destructive">Something went wrong. Please go back and try again.</p>
-        : groups.length === 0 ? (
+        : groups.length === 0 && others.length === 0 && !live.isLoading ? (
           <p className="rounded-xl border-2 border-foreground bg-card p-4 text-lg">Nothing nearby matches all your needs right now. Try a larger distance or budget in My data.</p>
+        ) : selOther ? (
+          <>
+            <p className="text-lg">{selOther.type}{selOther.openNow === null ? "" : selOther.openNow ? " · Open now" : " · Closed now"}</p>
+            <p className="rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
+              <strong>Menu not checked yet.</strong> I don't have this place's menu, so I can't tell you which dishes are safe for you. Please ask the restaurant directly.
+            </p>
+          </>
         ) : sel ? (
           <>
             <p className="text-lg">{sel.cuisine} · {formatDistance(sel.distance)} · about {walkMinutes(sel.distance)} min walk</p>
@@ -63,8 +90,11 @@ function Nearby() {
           </>
         ) : (
           <>
-            {!loc.real && <p className="rounded-xl bg-warning p-3 text-lg text-warning-foreground">Showing the sample area in central London.</p>}
-            {loc && <AreaMap center={loc} places={ordered} maxDistance={profile?.max_distance_m ?? 1500} selected={selected} onSelect={setSelected} />}
+            <LiveMap center={loc.actual} radius={radius} places={mapPlaces} selected={selected} onSelect={onSelect} />
+            {live.data?.error && <p role="status" className="text-lg">{live.data.error}</p>}
+            <h2 className="text-2xl font-bold">Safe dishes for you</h2>
+            {!loc.real && <p className="rounded-xl bg-warning p-3 text-lg text-warning-foreground">Checked menus are only available in central London for now, so these are sample places there.</p>}
+            {groups.length === 0 && <p className="text-lg">No checked menus match your needs nearby.</p>}
             <ol className="flex flex-col gap-3">
               {groups.map((g, i) => (
                 <li key={g.id}>
@@ -75,6 +105,22 @@ function Nearby() {
                 </li>
               ))}
             </ol>
+            {others.length > 0 && (
+              <>
+                <h2 className="text-2xl font-bold">Other places nearby</h2>
+                <p className="text-lg">Menus not checked yet — I can't confirm these are safe.</p>
+                <ol start={(loc.real ? groups.length : 0) + 1} className="flex flex-col gap-3">
+                  {others.map((p, i) => (
+                    <li key={p.id}>
+                      <button onClick={() => setSelected(p.id)} className="flex w-full items-center gap-4 rounded-2xl border-2 border-dashed border-foreground bg-card p-4 text-left text-lg hover:bg-secondary">
+                        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-card font-bold">{(loc.real ? groups.length : 0) + i + 1}</span>
+                        <span><span className="block text-xl font-bold">{p.name}</span>{p.type}{p.openNow === null ? "" : p.openNow ? " · Open now" : " · Closed now"} · Menu not checked</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            )}
           </>
         )}
       <div className="sticky bottom-0 mt-auto bg-background pt-3">
