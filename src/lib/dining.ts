@@ -109,8 +109,18 @@ export function reasonText(code: string, weather: string, mood: string) {
   }
 }
 
-/** Phase 1 weather estimate from the month; replaced by live weather later. */
-export function estimateWeather(d = new Date()): { kind: "cold" | "mild" | "warm"; note: string } {
+/** Live weather -> kind used for ranking + a plain-language note. */
+export function classifyWeather(degrees: number, type: string, description: string): { kind: "cold" | "rain" | "mild" | "warm"; note: string } {
+  const t = Math.round(degrees);
+  const desc = description ? `${description}, ${t}°C.` : `${t}°C.`;
+  if (/RAIN|SHOWER|DRIZZLE|THUNDER|SNOW|SLEET|HAIL/.test(type)) return { kind: "rain", note: `${desc} Something warm may help.` };
+  if (t < 12) return { kind: "cold", note: `${desc} It's cold — warm food may help.` };
+  if (t > 20) return { kind: "warm", note: `${desc} It's warm — light food may suit you.` };
+  return { kind: "mild", note: `${desc} A mild day.` };
+}
+
+/** Fallback weather estimate from the month; replaced by live weather later. */
+export function estimateWeather(d = new Date()): { kind: "cold" | "rain" | "mild" | "warm"; note: string } {
   const m = d.getMonth();
   if (m <= 1 || m >= 10) return { kind: "cold", note: "It is likely cold today. Warm food may help." };
   if (m >= 5 && m <= 7) return { kind: "warm", note: "It is likely warm today. Light food may suit you." };
