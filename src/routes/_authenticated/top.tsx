@@ -10,7 +10,7 @@ import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPr
 
 export const Route = createFileRoute("/_authenticated/top")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
-  head: () => ({ meta: [{ title: "Your best 3 — Dining Assistant" }, { name: "description", content: "Your three best safe food options nearby.", { property: "og:title", content: "Your best 3 — Dining Assistant" }, { property: "og:description", content: "Your three best safe food options nearby." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
+  head: () => ({ meta: [{ title: "Your best 3 — Dining Assistant" }, { name: "description", content: "Your three best safe food options nearby." }, { property: "og:title", content: "Your best 3 — Dining Assistant" }, { property: "og:description", content: "Your three best safe food options nearby." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: Top,
 });
 

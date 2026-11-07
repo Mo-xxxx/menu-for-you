@@ -12,7 +12,7 @@ import { deleteMyAccount } from "@/lib/dining.functions";
 import { ALLERGY_OPTIONS, formatDistance } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/my-data")({
-  head: () => ({ meta: [{ title: "My data — Dining Assistant" }, { name: "description", content: "See, change, download or delete your data.", { property: "og:title", content: "My data — Dining Assistant" }, { property: "og:description", content: "See, change, download or delete your data." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
+  head: () => ({ meta: [{ title: "My data — Dining Assistant" }, { name: "description", content: "See, change, download or delete your data." }, { property: "og:title", content: "My data — Dining Assistant" }, { property: "og:description", content: "See, change, download or delete your data." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: MyData,
 });
 

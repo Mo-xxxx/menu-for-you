@@ -13,7 +13,7 @@ import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPr
 
 export const Route = createFileRoute("/_authenticated/item/$id")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
-  head: () => ({ meta: [{ title: "Dish details — Dining Assistant" }, { name: "description", content: "Full ingredients and allergen information for this dish.", { property: "og:title", content: "Dish details — Dining Assistant" }, { property: "og:description", content: "Full ingredients and allergen information for this dish." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
+  head: () => ({ meta: [{ title: "Dish details — Dining Assistant" }, { name: "description", content: "Full ingredients and allergen information for this dish." }, { property: "og:title", content: "Dish details — Dining Assistant" }, { property: "og:description", content: "Full ingredients and allergen information for this dish." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: Item,
 });
 
