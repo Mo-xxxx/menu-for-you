@@ -46,3 +46,4 @@ use the editor.
 - Final personal records use owner-scoped, paginated reads and a deterministic browser-safe summary shared by display, speech, and export; include only explicitly selected device settings, never toolkit tokens or session storage, to keep exports complete and private.
 - Restaurant choices are explicit consent-gated actions, not menu views; owner-scoped rows preserve restaurant, date, and request context with removal and profile-delete cascade so browsing is not mistaken for intent.
 - Menu-specific recommendations restrict the output of findSafeItems on the server to the selected restaurant; never rerank or determine safety in menu UI, so shared ranking and safety stay authoritative.
+- Profile-only recommendations use empty context hints when no request exists, preserving database filters and learned/favourite ranking without inventing or storing a mood; provided request IDs must still resolve through owner-scoped reads.

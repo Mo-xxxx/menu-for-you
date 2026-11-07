@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { parseRequest } from "./dining";
+import { recommendationContext } from "./recommendation-context";
 
 export type SafeItem = {
   item_id: string; item_name: string; price: number; diet_tags: string[]; summary_text: string;
@@ -18,8 +19,12 @@ export const findSafeItems = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const { data: ctx, error: ctxErr } = await supabase.from("context_snapshots").select("*").eq("id", data.ctxId).single();
-    if (ctxErr || !ctx) throw new Error("Request not found");
+    let ctx = recommendationContext(null);
+    if (data.ctxId) {
+      const saved = await supabase.from("context_snapshots").select("*").eq("id", data.ctxId).single();
+      if (saved.error || !saved.data) throw new Error("Request not found");
+      ctx = recommendationContext(saved.data);
+    }
     const hints = parseRequest(ctx.request_text);
     const { data: rows, error } = await supabase.rpc("find_safe_items", {
       p_lat: data.lat, p_lng: data.lng, p_mood: ctx.mood, p_weather: ctx.weather,
