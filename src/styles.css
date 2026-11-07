@@ -102,6 +102,28 @@ html[data-contrast="standard"] {
 html { font-size: 112.5%; }
 html[data-text-size="normal"] { font-size: 100%; }
 html[data-text-size="xl"] { font-size: 131.25%; }
+html[data-text-size="xxl"] { font-size: 150%; }
+
+/* Large tap targets: every control gets a taller hit area. */
+html[data-large-targets="on"] button,
+html[data-large-targets="on"] a,
+html[data-large-targets="on"] input,
+html[data-large-targets="on"] select,
+html[data-large-targets="on"] textarea,
+html[data-large-targets="on"] summary { min-height: 3.5rem; }
+
+/* Captions sit at the bottom of the screen, so leave room for them. */
+html[data-captions="on"] main { padding-bottom: 16rem; }
+
+/* Reduce motion: no animations, transitions or smooth scrolling. */
+html[data-reduce-motion="on"] *,
+html[data-reduce-motion="on"] *::before,
+html[data-reduce-motion="on"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
 
 @layer base {
   * { border-color: var(--color-border); }

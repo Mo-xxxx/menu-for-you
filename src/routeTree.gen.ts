@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAccessibilityRouteImport } from './routes/_authenticated/accessibility'
 import { Route as AuthenticatedMyDataRouteImport } from './routes/_authenticated/my-data'
 import { Route as AuthenticatedNearbyRouteImport } from './routes/_authenticated/nearby'
 import { Route as AuthenticatedRequestRouteImport } from './routes/_authenticated/request'
@@ -35,6 +36,12 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAccessibilityRoute =
+  AuthenticatedAccessibilityRouteImport.update({
+    id: '/accessibility',
+    path: '/accessibility',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMyDataRoute = AuthenticatedMyDataRouteImport.update({
   id: '/my-data',
   path: '/my-data',
@@ -80,6 +87,7 @@ const AuthenticatedRestaurantIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/accessibility': typeof AuthenticatedAccessibilityRoute
   '/my-data': typeof AuthenticatedMyDataRoute
   '/nearby': typeof AuthenticatedNearbyRoute
   '/request': typeof AuthenticatedRequestRoute
@@ -92,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/accessibility': typeof AuthenticatedAccessibilityRoute
   '/my-data': typeof AuthenticatedMyDataRoute
   '/nearby': typeof AuthenticatedNearbyRoute
   '/request': typeof AuthenticatedRequestRoute
@@ -106,6 +115,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/accessibility': typeof AuthenticatedAccessibilityRoute
   '/_authenticated/my-data': typeof AuthenticatedMyDataRoute
   '/_authenticated/nearby': typeof AuthenticatedNearbyRoute
   '/_authenticated/request': typeof AuthenticatedRequestRoute
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/accessibility'
     | '/my-data'
     | '/nearby'
     | '/request'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/accessibility'
     | '/my-data'
     | '/nearby'
     | '/request'
@@ -145,6 +157,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/accessibility'
     | '/_authenticated/my-data'
     | '/_authenticated/nearby'
     | '/_authenticated/request'
@@ -183,6 +196,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/accessibility': {
+      id: '/_authenticated/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof AuthenticatedAccessibilityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/my-data': {
       id: '/_authenticated/my-data'
@@ -244,6 +264,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccessibilityRoute: typeof AuthenticatedAccessibilityRoute
   AuthenticatedMyDataRoute: typeof AuthenticatedMyDataRoute
   AuthenticatedNearbyRoute: typeof AuthenticatedNearbyRoute
   AuthenticatedRequestRoute: typeof AuthenticatedRequestRoute
@@ -255,6 +276,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccessibilityRoute: AuthenticatedAccessibilityRoute,
   AuthenticatedMyDataRoute: AuthenticatedMyDataRoute,
   AuthenticatedNearbyRoute: AuthenticatedNearbyRoute,
   AuthenticatedRequestRoute: AuthenticatedRequestRoute,

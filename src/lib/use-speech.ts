@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { speechRateValue } from "@/lib/accessibility";
+import { pushSpoken } from "@/lib/speech-bus";
 
 type Rec = { start: () => void; stop: () => void; abort: () => void; lang: string; interimResults: boolean;
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
@@ -37,10 +39,11 @@ export function useSpeech() {
 
   const speak = useCallback((text: string) => {
     if (!("speechSynthesis" in window)) return;
+    pushSpoken(text);
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "en-GB";
-    u.rate = 0.95;
+    u.rate = speechRateValue();
     window.speechSynthesis.speak(u);
   }, []);
 

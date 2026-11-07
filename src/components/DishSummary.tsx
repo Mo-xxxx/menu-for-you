@@ -29,7 +29,9 @@ export function PictureSummary({ price, distance, dietText, ingredients }: { pri
   );
 }
 
-export function outputsOf(p: { summary_outputs?: string[] | null } | null | undefined): SummaryOutput[] {
+export function outputsOf(p: { summary_outputs?: string[] | null } | null | undefined, picturesFromSettings = false): SummaryOutput[] {
   const o = (p?.summary_outputs ?? ["audio", "text"]).filter((x): x is SummaryOutput => ["audio", "pictures", "text"].includes(x));
-  return o.length ? o : ["text"];
+  const base: SummaryOutput[] = o.length ? o : ["text"];
+  if (picturesFromSettings && !base.includes("pictures")) return [...base, "pictures"];
+  return base;
 }

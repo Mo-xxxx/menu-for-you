@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { seedFromProfile } from "@/lib/accessibility";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Profile = Tables<"profiles">;
@@ -18,10 +19,7 @@ export const profileQuery = queryOptions({
 export function useProfile() {
   const q = useQuery(profileQuery);
   useEffect(() => {
-    const p = q.data;
-    if (!p) return;
-    document.documentElement.dataset['textSize'] = p.text_size;
-    document.documentElement.dataset['contrast'] = p.high_contrast ? "high" : "standard";
+    seedFromProfile(q.data);
   }, [q.data]);
   return q;
 }

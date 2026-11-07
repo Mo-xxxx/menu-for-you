@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, CheckCircle2, Clock, X, Undo2, Volume2 } from "lucide-react";
 import { useSpeech } from "@/lib/use-speech";
 import { useProfile } from "@/lib/use-profile";
+import { useAccessibility } from "@/lib/accessibility";
 import { PictureSummary, outputsOf } from "@/components/DishSummary";
 import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/Screen";
@@ -34,7 +35,8 @@ function MenuPage() {
   const qc = useQueryClient();
   const { speak } = useSpeech();
   const { data: profile } = useProfile();
-  const out = outputsOf(profile);
+  const a = useAccessibility();
+  const out = outputsOf(profile, a.pictureSummaries);
   const q = useQuery({
     queryKey: ["menu-page", id],
     queryFn: async () => {
