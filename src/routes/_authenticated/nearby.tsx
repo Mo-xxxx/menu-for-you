@@ -29,7 +29,7 @@ function Nearby() {
   const menus = useQuery({
     queryKey: ["menus-on-file"],
     queryFn: async () => {
-      const { data: rows, error } = await supabase.from("restaurants").select("id,name,menu_items(review_status)").neq("source", "sample").order("name");
+      const { data: rows, error } = await supabase.from("restaurants").select("id,name,lat,lng,google_place_id,menu_items(review_status)").neq("source", "sample").order("name");
       if (error) throw error;
       return (rows ?? []).filter((r) => r.menu_items.some((item) => item.review_status === "pending" || item.review_status === "confirmed"));
     },
@@ -55,17 +55,30 @@ function Nearby() {
     queryKey: ["places", loc?.actual.lat.toFixed(3), loc?.actual.lng.toFixed(3), radius],
     enabled: !!loc,
     staleTime: 10 * 60 * 1000,
-    queryFn: () => placesFn({ data: { lat: loc!.actual.lat, lng: loc!.actual.lng, radius } }),
+    queryFn: () => {
+      if (!loc) throw new Error("Your location isn't available yet.");
+      return placesFn({ data: { lat: loc.actual.lat, lng: loc.actual.lng, radius } });
+    },
   });
+  // This distance check only places menu-browsing markers, never selects safe dishes.
+  const mappedMenus = useMemo(() => {
+    if (!loc) return [];
+    const radians = (degrees: number) => degrees * Math.PI / 180;
+    return (menus.data ?? []).filter((r) => {
+      if (groups.some((g) => g.id === r.id)) return false;
+      const a = Math.sin(radians(r.lat - loc.actual.lat) / 2) ** 2
+        + Math.cos(radians(loc.actual.lat)) * Math.cos(radians(r.lat))
+        * Math.sin(radians(r.lng - loc.actual.lng) / 2) ** 2;
+      return 6371000 * 2 * Math.asin(Math.sqrt(Math.min(1, a))) <= radius;
+    });
+  }, [menus.data, groups, loc, radius]);
   const safeNames = new Set(groups.map((g) => g.name.toLowerCase()));
-  const others = (live.data?.places ?? []).filter((p) => !safeNames.has(p.name.toLowerCase()));
+  const others = (live.data?.places ?? []).filter((p) => !safeNames.has(p.name.toLowerCase()) && !mappedMenus.some((r) => r.google_place_id === p.id));
   const mapPlaces: MapPlace[] = useMemo(() => {
-    const showSample = true;
-    const a = showSample ? groups.map((g, i) => { const c = coords?.find((x) => x.id === g.id); return c ? { id: g.id, name: g.name, lat: c.lat, lng: c.lng, label: String(i + 1) } : null; }).filter(Boolean) as MapPlace[] : [];
-    const start = showSample ? groups.length : 0;
-    return [...a, ...others.map((p, i) => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, label: String(start + i + 1) }))];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groups, coords, live.data, loc?.real]);
+    const a = groups.map((g, i) => { const c = coords?.find((x) => x.id === g.id); return c ? { id: g.id, name: g.name, lat: c.lat, lng: c.lng, label: String(i + 1) } : null; }).filter((p): p is MapPlace => p !== null);
+    const b = mappedMenus.map((r, i) => ({ id: r.id, name: r.name, lat: r.lat, lng: r.lng, label: String(groups.length + i + 1) }));
+    return [...a, ...b, ...others.map((p, i) => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, label: String(groups.length + b.length + i + 1) }))];
+  }, [groups, coords, mappedMenus, others]);
   const menuStatus = useQuery({
     queryKey: ["place-menu-status", others.map((p) => p.id).join(",")],
     enabled: others.length > 0,
@@ -80,7 +93,13 @@ function Nearby() {
     },
   });
   const statusText = (id: string) => { const st = menuStatus.data?.get(id); return st ? `Menu on file · ${st.confirmed} of ${st.total} dishes checked` : "No menu found yet"; };
-  const onSelect = useCallback((id: string) => setSelected(id), []);
+  const onSelect = useCallback((id: string) => {
+    if (mappedMenus.some((r) => r.id === id) || groups.some((g) => g.id === id)) {
+      void navigate({ to: "/restaurant/$id", params: { id }, search: { ctx } });
+      return;
+    }
+    setSelected(id);
+  }, [mappedMenus, groups, navigate, ctx]);
   const sel = groups.find((g) => g.id === selected);
   const selOther = selected && !sel ? live.data?.places.find((p) => p.id === selected) : undefined;
 
@@ -88,7 +107,7 @@ function Nearby() {
     <Screen step={2} total={4} title={sel ? sel.name : selOther ? selOther.name : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
       {isLoading || !loc ? <p role="status" className="text-xl">Finding safe food near you…</p>
         : error ? <p role="alert" className="text-xl text-destructive">Something went wrong. Please go back and try again.</p>
-        : groups.length === 0 && others.length === 0 && !live.isLoading ? (
+        : groups.length === 0 && others.length === 0 && (menus.data?.length ?? 0) === 0 && !live.isLoading && !menus.isLoading ? (
           <p className="rounded-xl border-2 border-foreground bg-card p-4 text-lg">Nothing nearby matches all your needs right now. Try a larger distance or budget in My data.</p>
         ) : selOther ? (
           <>
@@ -124,7 +143,10 @@ function Nearby() {
             {(menus.data?.length ?? 0) > 0 && <>
               <h2 className="text-2xl font-bold">Restaurant menus on file</h2>
               <p className="text-lg">These are menus to review, not food suggestions. Only person-checked dishes within your distance, budget, diet and allergy settings can reach your best 3.</p>
-              <ul className="flex flex-col gap-3">{menus.data?.map((r) => <li key={r.id}><Button asChild variant="bigOutline" size="xl"><Link to="/restaurant/$id" params={{ id: r.id }} search={{ ctx }}>Open {r.name} menu</Link></Button></li>)}</ul>
+              <ul className="flex flex-col gap-3">{menus.data?.map((r) => {
+                const marker = mapPlaces.find((p) => p.id === r.id);
+                return <li key={r.id}><Button asChild variant="bigOutline" size="xl"><Link to="/restaurant/$id" params={{ id: r.id }} search={{ ctx }}>{marker && <span aria-label={`Map marker ${marker.label}`} className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground">{marker.label}</span>}Open {r.name} menu</Link></Button></li>;
+              })}</ul>
             </>}
             {menus.error && <p role="alert" className="text-lg">Saved menus couldn't load. Please try again.</p>}
             <ol className="flex flex-col gap-3">
@@ -141,11 +163,11 @@ function Nearby() {
               <>
                 <h2 className="text-2xl font-bold">Other places nearby</h2>
                 <p className="text-lg">Their dishes haven't been confirmed by a person yet, so I can't say they're safe.</p>
-                <ol start={groups.length + 1} className="flex flex-col gap-3">
+                <ol start={groups.length + mappedMenus.length + 1} className="flex flex-col gap-3">
                   {others.map((p, i) => (
                     <li key={p.id}>
                       <button onClick={() => setSelected(p.id)} className="flex w-full items-center gap-4 rounded-2xl border-2 border-dashed border-foreground bg-card p-4 text-left text-lg hover:bg-secondary">
-                        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-card font-bold">{groups.length + i + 1}</span>
+                        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-card font-bold">{groups.length + mappedMenus.length + i + 1}</span>
                         <span><span className="block text-xl font-bold">{p.name}</span>{p.type}{p.openNow === null ? "" : p.openNow ? " · Open now" : " · Closed now"} · {statusText(p.id)}</span>
                       </button>
                     </li>
