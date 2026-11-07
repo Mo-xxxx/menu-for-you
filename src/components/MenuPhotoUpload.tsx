@@ -20,7 +20,7 @@ async function toJpegDataUrl(file: File, max = 1600): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-export function MenuPhotoUpload({ placeId, placeName, marker, ctx }: { placeId: string; placeName: string; marker?: string; ctx: string }) {
+export function MenuPhotoUpload({ placeId, placeName, marker, ctx }: { placeId: string; placeName: string; marker?: string | undefined; ctx: string }) {
   const menuLabel = `${marker ? `Map ${marker} · ` : ""}${placeName}`;
   const input = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();

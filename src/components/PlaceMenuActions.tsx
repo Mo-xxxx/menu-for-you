@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { importMenuFromWebsite } from "@/lib/menu-website.functions";
 
 /** For a real place: link to its menu page if one exists, and a button to read its website menu. */
-export function PlaceMenuActions({ placeId, placeName, marker, ctx }: { placeId: string; placeName: string; marker?: string; ctx: string }) {
+export function PlaceMenuActions({ placeId, placeName, marker, ctx }: { placeId: string; placeName: string; marker?: string | undefined; ctx: string }) {
   const menuLabel = `${marker ? `Map ${marker} · ` : ""}${placeName}`;
   const qc = useQueryClient();
   const { speak } = useSpeech();
