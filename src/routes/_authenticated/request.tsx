@@ -11,19 +11,13 @@ import { Screen, MicButton, Heard } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
 import { useSpeech } from "@/lib/use-speech";
 import { useProfile } from "@/lib/use-profile";
-import { estimateWeather, timeOfDay } from "@/lib/dining";
+import { estimateWeather, timeOfDay, moodFromWords } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/request")({
   head: () => ({ meta: [{ title: "What would you like? — Dining Assistant" }, { name: "description", content: "Pick your mood or say what you'd like to eat." }, { property: "og:title", content: "What would you like? — Dining Assistant" }, { property: "og:description", content: "Pick your mood or say what you'd like to eat." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: RequestPage,
 });
 
-function moodFromWords(t: string) {
-  const s = t.toLowerCase();
-  if (/(tired|sad|low|ill|unwell|rough|stressed|cold)/.test(s)) return "low";
-  if (/(great|good|happy|excited|hungry)/.test(s)) return "good";
-  return "okay";
-}
 
 function RequestPage() {
   const navigate = useNavigate();
@@ -70,10 +64,11 @@ function RequestPage() {
         </>
       ) : (
         <>
-          <MicButton listening={speech.listening} onClick={() => speech.listening ? speech.stop() : speech.listen(setHeard)} label="Tap to speak" />
+          <MicButton listening={speech.listening} onClick={() => speech.listening ? speech.stop() : speech.listen((t: string) => { setHeard(t); speech.speak?.(`I heard you're feeling ${moodFromWords(t)}.`); })} label="Tap to speak" />
           <p className="text-center text-lg">For example: “Something warm and light, under £12”</p>
           {speech.error && <p role="alert" className="text-center text-lg font-bold text-destructive">{speech.error}</p>}
           <Heard text={heard} />
+          {heard && <p aria-live="polite" className="text-center text-xl font-bold">I heard you're feeling {moodFromWords(heard)}.</p>}
           <Button variant="big" size="xl" className="mt-auto justify-center" disabled={!heard || busy} onClick={() => heard && go(moodFromWords(heard), heard)}>
             Yes, find this
           </Button>

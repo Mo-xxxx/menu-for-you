@@ -153,3 +153,29 @@ export function menuOverviewSpeech(m: { name: string; total: number; confirmed: 
   const prices = m.cheapest === null ? "" : m.cheapest === m.dearest ? ` Dishes cost ${formatPrice(m.cheapest)}.` : ` Prices go from ${formatPrice(m.cheapest)} to ${formatPrice(m.dearest!)}.`;
   return `${m.name}. ${m.total} ${m.total === 1 ? "dish" : "dishes"} on file, ${m.confirmed} confirmed by a person.${prices} Allergens are not guaranteed. Always check with the restaurant.`;
 }
+
+// ---- Spoken mood: negative → low, positive/optimistic → good, otherwise okay ----
+const NEG_WORDS = ["sad","tired","stressed","anxious","down","upset","lonely","worried","exhausted","ill","unwell","sick","rough","low","bad","awful","terrible","miserable","depressed","grumpy","angry","frustrated","drained","overwhelmed","nervous","gloomy","unhappy","horrible","rubbish","meh","blue","sleepy","poorly","scared","annoyed","hurt"];
+const POS_WORDS = ["happy","great","good","excited","cheerful","relaxed","energetic","hopeful","optimistic","fantastic","amazing","wonderful","brilliant","positive","joyful","glad","calm","awesome","lovely","excellent","delighted","content","peaceful","motivated","proud","better","thrilled","grateful","fab","super"];
+const NEG_PHRASES = ["fed up","bad day","worn out","stressed out","not okay","not ok","not well","under the weather"];
+const POS_PHRASES = ["looking forward","good day","in a good mood","on top of the world","feeling better"];
+const NEGATORS = ["not","don't","dont","never","isn't","isnt","no","hardly","aren't","wasn't","ain't"];
+
+export function moodFromWords(t: string): "low" | "okay" | "good" {
+  let s = ` ${t.toLowerCase().replace(/[^a-z' ]+/g, " ").replace(/\s+/g, " ").trim()} `;
+  let neg = 0, pos = 0;
+  if (s.includes(" not bad ")) { pos++; s = s.replace(/ not bad /g, " "); }
+  for (const p of NEG_PHRASES) if (s.includes(` ${p} `)) { neg++; s = s.split(` ${p} `).join(" "); }
+  for (const p of POS_PHRASES) if (s.includes(` ${p} `)) { pos++; s = s.split(` ${p} `).join(" "); }
+  const words = s.trim().split(" ").filter(Boolean);
+  words.forEach((w, i) => {
+    const isPos = POS_WORDS.includes(w), isNeg = NEG_WORDS.includes(w);
+    if (!isPos && !isNeg) return;
+    const negated = words.slice(Math.max(0, i - 3), i).some((x) => NEGATORS.includes(x));
+    if (isPos) negated ? neg++ : pos++;
+    else negated ? pos++ : neg++;
+  });
+  if (neg > 0 && pos === 0) return "low";
+  if (pos > 0 && neg === 0) return "good";
+  return "okay";
+}
