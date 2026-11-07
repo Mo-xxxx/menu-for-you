@@ -103,14 +103,24 @@ export function reasonText(code: string, weather: string, mood: string) {
     case "liked_dish": return "You liked this dish before.";
     case "liked_cuisine": return "You often like this kind of food.";
     case "matches_request": return "It matches what you asked for.";
-    case "weather": return weather === "warm" ? "Light and fresh for a warm day." : "Warm and filling for a cold day.";
+    case "weather": return weather === "warm" ? "Light and fresh for a warm day." : weather === "rain" ? "Warm and comforting on a rainy day." : "Warm and filling for a cold day.";
     case "mood": return mood === "low" ? "Comforting when you feel low." : "Light and bright to match your mood.";
     default: return "Safe for you and close by.";
   }
 }
 
-/** Phase 1 weather estimate from the month; replaced by live weather later. */
-export function estimateWeather(d = new Date()): { kind: "cold" | "mild" | "warm"; note: string } {
+/** Live weather -> kind used for ranking + a plain-language note. */
+export function classifyWeather(degrees: number, type: string, description: string): { kind: "cold" | "rain" | "mild" | "warm"; note: string } {
+  const t = Math.round(degrees);
+  const desc = description ? `${description}, ${t}°C.` : `${t}°C.`;
+  if (/RAIN|SHOWER|DRIZZLE|THUNDER|SNOW|SLEET|HAIL/.test(type)) return { kind: "rain", note: `${desc} Something warm may help.` };
+  if (t < 12) return { kind: "cold", note: `${desc} It's cold — warm food may help.` };
+  if (t > 20) return { kind: "warm", note: `${desc} It's warm — light food may suit you.` };
+  return { kind: "mild", note: `${desc} A mild day.` };
+}
+
+/** Fallback weather estimate from the month; replaced by live weather later. */
+export function estimateWeather(d = new Date()): { kind: "cold" | "rain" | "mild" | "warm"; note: string } {
   const m = d.getMonth();
   if (m <= 1 || m >= 10) return { kind: "cold", note: "It is likely cold today. Warm food may help." };
   if (m >= 5 && m <= 7) return { kind: "warm", note: "It is likely warm today. Light food may suit you." };

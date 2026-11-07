@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { audioSummary, parseAllergies, parseBudget, parseDiet, parseDistance, parseRequest } from "./dining";
+import { audioSummary, classifyWeather, parseAllergies, parseBudget, parseDiet, parseDistance, parseRequest } from "./dining";
 
 describe("speech parsing", () => {
   it("reads a budget like 'under £12'", () => expect(parseRequest("Something warm and light, under £12").budget).toBe(12));
@@ -21,4 +21,10 @@ describe("audio summary order", () => {
     expect(idx.every((v) => v >= 0)).toBe(true);
     expect([...idx].sort((a, b) => a - b)).toEqual(idx);
   });
+});
+
+describe("live weather classification", () => {
+  it("treats under 12°C as cold", () => expect(classifyWeather(10, "MOSTLY_CLOUDY", "Mostly cloudy").kind).toBe("cold"));
+  it("treats rain as rain whatever the temperature", () => expect(classifyWeather(18, "LIGHT_RAIN", "Light rain").kind).toBe("rain"));
+  it("treats over 20°C as warm", () => expect(classifyWeather(24, "CLEAR", "Clear").kind).toBe("warm"));
 });

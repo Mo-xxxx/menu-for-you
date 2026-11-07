@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
 import { DEFAULT_LOCATION } from "./dining";
 
+/**
+ * actual: the user's real position (for the live map and weather).
+ * lat/lng: where sample menus are searched; falls back to central London when far away.
+ */
 export function useLocation() {
-  const [loc, setLoc] = useState<{ lat: number; lng: number; real: boolean } | null>(null);
+  const [loc, setLoc] = useState<{ lat: number; lng: number; real: boolean; actual: { lat: number; lng: number } } | null>(null);
   useEffect(() => {
-    if (!navigator.geolocation) { setLoc({ ...DEFAULT_LOCATION, real: false }); return; }
+    const fallback = () => setLoc({ ...DEFAULT_LOCATION, real: false, actual: DEFAULT_LOCATION });
+    if (!navigator.geolocation) { fallback(); return; }
     navigator.geolocation.getCurrentPosition(
       (p) => {
-        const { latitude: lat, longitude: lng } = p.coords;
-        // Sample menus cover central London only; outside it, show the sample area.
-        const far = Math.abs(lat - DEFAULT_LOCATION.lat) > 0.2 || Math.abs(lng - DEFAULT_LOCATION.lng) > 0.3;
-        setLoc(far ? { ...DEFAULT_LOCATION, real: false } : { lat, lng, real: true });
+        const actual = { lat: p.coords.latitude, lng: p.coords.longitude };
+        const far = Math.abs(actual.lat - DEFAULT_LOCATION.lat) > 0.2 || Math.abs(actual.lng - DEFAULT_LOCATION.lng) > 0.3;
+        setLoc(far ? { ...DEFAULT_LOCATION, real: false, actual } : { ...actual, real: true, actual });
       },
-      () => setLoc({ ...DEFAULT_LOCATION, real: false }),
+      fallback,
       { timeout: 6000 },
     );
   }, []);
