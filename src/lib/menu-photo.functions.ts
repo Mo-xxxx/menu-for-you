@@ -7,7 +7,7 @@ const MAX_IMAGE_CHARS = 7_000_000; // ~5MB image as a data URL
 
 export type ExtractedDish = {
   name: string; price: number | null; diet_tags: string[]; ingredients: { name: string; allergen_group: string | null }[];
-  possible_allergens: string[]; summary: string;
+  possible_allergens: string[]; possible_diet_tags: string[]; summary: string;
 };
 
 const schema = {
@@ -18,11 +18,12 @@ const schema = {
       type: "array", maxItems: 40,
       items: {
         type: "object", additionalProperties: false,
-        required: ["name", "price", "diet_tags", "ingredients", "possible_allergens", "summary"],
+        required: ["name", "price", "diet_tags", "possible_diet_tags", "ingredients", "possible_allergens", "summary"],
         properties: {
           name: { type: "string" },
           price: { type: ["number", "null"] },
           diet_tags: { type: "array", items: { type: "string", enum: [...DIET_OPTIONS] } },
+          possible_diet_tags: { type: "array", items: { type: "string", enum: [...DIET_OPTIONS] } },
           ingredients: { type: "array", items: { type: "object", additionalProperties: false, required: ["name", "allergen_group"],
             properties: { name: { type: "string" }, allergen_group: { type: ["string", "null"], enum: [...ALLERGENS, null] } } } },
           possible_allergens: { type: "array", items: { type: "string", enum: ALLERGENS } },
@@ -34,9 +35,11 @@ const schema = {
 } as const;
 
 const PROMPT = `You read restaurant menu photos for an accessibility app used by people with allergies, visual impairments and dyspraxia.
+You may receive several photos of the same menu (pages or close-ups); combine them and list each dish once.
 For each dish visible on the menu, return:
 - name exactly as written; price in pounds as a number, or null if not shown.
-- diet_tags: ONLY tags the menu states or marks (e.g. a "V" or "VG" symbol, "GF", "halal"). Never guess a diet tag.
+- diet_tags: ONLY tags the menu states or marks (e.g. a "V" or "VG" symbol, "GF", "halal"). Never guess a diet tag here.
+- possible_diet_tags: diet tags the dish probably fits based on its ingredients, even if the menu does not say so. These are shown as unverified guesses only.
 - ingredients: listed ingredients, plus standard ingredients of the dish in lower case. Set allergen_group for any ingredient that contains a UK allergen.
 - possible_allergens: every allergen the dish likely contains or may contain, including from standard recipes, sauces, frying oil and cross-contamination. Be cautious: when unsure, include it.
 - summary: one short plain-English sentence (under 15 words) describing the dish, no marketing words, no health claims.
@@ -57,9 +60,10 @@ async function placeDetails(placeId: string) {
 /** Reads a menu photo with AI and stores every dish as ai_inferred for this real place. */
 export const extractMenuFromPhoto = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { placeId: string; image: string }) => {
+  .inputValidator((d: { placeId: string; images: string[] }) => {
     if (typeof d.placeId !== "string" || !/^[\w-]{10,200}$/.test(d.placeId)) throw new Error("Bad place");
-    if (typeof d.image !== "string" || !/^data:image\/(jpeg|png|webp);base64,/.test(d.image) || d.image.length > MAX_IMAGE_CHARS) throw new Error("Please use a JPG, PNG or WebP photo under 5 MB.");
+    if (!Array.isArray(d.images) || d.images.length < 1 || d.images.length > 4) throw new Error("Please add between 1 and 4 photos.");
+    for (const img of d.images) if (typeof img !== "string" || !/^data:image\/(jpeg|png|webp);base64,/.test(img) || img.length > MAX_IMAGE_CHARS) throw new Error("Please use JPG, PNG or WebP photos under 5 MB each.");
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -72,7 +76,7 @@ export const extractMenuFromPhoto = createServerFn({ method: "POST" })
         model: "openai/gpt-6-astra",
         input: [{ role: "user", content: [
           { type: "input_text", text: PROMPT },
-          { type: "input_image", image_url: data.image, detail: "high" },
+          ...data.images.map((img) => ({ type: "input_image" as const, image_url: img, detail: "high" as const })),
         ] }],
         text: { format: { type: "json_schema", name: "menu", strict: true, schema } },
       });
