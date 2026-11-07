@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { speechRateValue } from "@/lib/accessibility";
+import { pushSpoken } from "@/lib/speech-bus";
 
 type Rec = { start: () => void; stop: () => void; abort: () => void; lang: string; interimResults: boolean;
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
