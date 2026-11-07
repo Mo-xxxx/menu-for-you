@@ -239,6 +239,7 @@ export type Database = {
           high_contrast: boolean
           max_distance_m: number
           setup_complete: boolean
+          summary_outputs: string[]
           text_size: string
           updated_at: string
           user_id: string
@@ -253,6 +254,7 @@ export type Database = {
           high_contrast?: boolean
           max_distance_m?: number
           setup_complete?: boolean
+          summary_outputs?: string[]
           text_size?: string
           updated_at?: string
           user_id: string
@@ -267,6 +269,7 @@ export type Database = {
           high_contrast?: boolean
           max_distance_m?: number
           setup_complete?: boolean
+          summary_outputs?: string[]
           text_size?: string
           updated_at?: string
           user_id?: string
