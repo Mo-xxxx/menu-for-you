@@ -8,3 +8,4 @@
 - [x] Add nearby real-menu markers and open full menus from map selections; preserve the request for returning to best 3
 - [x] Match map numbers to menu headings and website/photo transcription messages
 - [x] Save and remove favourite restaurant menus, retrieve them in Nearby and My data, and include them in data export; signed-in save/reload/retrieve/remove verified
+- [x] Preserve mood-aware database ranking in restaurant order and show the chosen mood on Nearby and Best 3

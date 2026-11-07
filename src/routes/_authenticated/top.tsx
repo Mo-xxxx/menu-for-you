@@ -7,6 +7,7 @@ import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
 import { useSpeech } from "@/lib/use-speech";
 import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPrice, reasonText } from "@/lib/dining";
+import { moodLabel } from "@/lib/restaurant-ranking";
 
 export const Route = createFileRoute("/_authenticated/top")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
@@ -27,6 +28,7 @@ function Top() {
 
   return (
     <Screen step={3} total={4} title="Your best 3" onBack={() => navigate({ to: "/nearby", search: { ctx } })}>
+      {data && <p role="status" className="text-lg"><strong>Your mood:</strong> {moodLabel(data.ctx.mood)}</p>}
       {!ctx ? <><p role="status" className="text-lg">Choose your mood first so I can find food for this request.</p><Button asChild variant="big" size="xl"><Link to="/request">Start a food request</Link></Button></> : isLoading ? <p role="status" className="text-xl">Choosing your best options…</p>
         : error ? <><p role="alert" className="text-lg">Your suggestions couldn't load. Please try again.</p><Button variant="big" size="xl" onClick={() => void refetch()}>Try again</Button></>
         : top.length === 0 ? <>
