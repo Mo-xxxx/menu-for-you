@@ -50,6 +50,13 @@
       "when": 1794069888711,
       "tag": "0006_restaurant_choice_records_and_favourite_ranking",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794071612977,
+      "tag": "0007_allergen_keyword_matching",
+      "breakpoints": true
     }
   ]
 }
