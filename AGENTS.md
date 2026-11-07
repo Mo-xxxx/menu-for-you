@@ -33,3 +33,4 @@ use the editor.
 - Safe-food filtering and ranking live in the `find_safe_items` Postgres function, called only via the `findSafeItems` server function; the UI never filters for safety itself.
 - Learned preferences are updated by a trigger on `events`; rows with `user_override` are not changed by learning.
 - Speech parsing and summary formatting live in `src/lib/dining.ts` (browser-safe, unit-tested).
+- Google Places and Weather calls go through signed-in server functions in `src/lib/maps.functions.ts`; the browser key is used only to draw the map. Places without checked menus are never presented as safe.
