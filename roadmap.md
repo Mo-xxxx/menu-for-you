@@ -5,3 +5,4 @@
 - [x] Verify signed-in mood → nearby → real menu → suggestions navigation; repair context loss, stale menu counts, and empty/error dead ends
 - [ ] Verify populated suggestions and dish actions — blocked until a person confirms real-menu dishes matching the profile
 - [ ] Verify Google map rendering — Google rejects the local test origin; requires an authorized origin
+- [x] Add nearby real-menu markers and open full menus from map selections; preserve the request for returning to best 3
