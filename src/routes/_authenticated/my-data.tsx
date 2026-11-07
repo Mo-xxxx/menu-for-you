@@ -64,7 +64,6 @@ function MyData() {
 
   const sizes = [{ id: "normal", label: "Normal" }, { id: "large", label: "Large" }, { id: "xl", label: "Extra large" }];
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-5 py-6">
       <Button asChild variant="bigOutline" size="tap" className="self-start"><Link to="/request">← Back to food</Link></Button>
       <h1 className="text-3xl font-bold">My data</h1>
       <FavouriteMenus userId={userId} />
@@ -82,19 +81,10 @@ function MyData() {
       </section>
 
       <section aria-labelledby="acc" className="rounded-2xl border-2 border-foreground bg-card p-4 text-lg">
-        <h2 id="acc" className="text-xl font-bold">Display and voice</h2>
-        <p className="mt-2 font-bold">Text size</p>
-        <div className="mt-1 grid grid-cols-3 gap-2">
-          {sizes.map((s) => <Button key={s.id} variant="choice" size="tap" aria-pressed={p?.text_size === s.id} onClick={() => updateProfile({ text_size: s.id })}>{s.label}</Button>)}
-        </div>
-        <div className="mt-3 grid gap-2">
-          <Button variant="choice" size="tap" aria-pressed={!!p?.high_contrast} onClick={() => updateProfile({ high_contrast: !p?.high_contrast })}>High contrast: {p?.high_contrast ? "On" : "Off"}</Button>
-          <p className="mt-2 font-bold">Show summaries as</p>
-          {OUTPUT_OPTIONS.map((o) => { const cur = outputsOf(p); const on = cur.includes(o.id); return (
-            <Button key={o.id} variant="choice" size="tap" aria-pressed={on} onClick={() => { const next = on ? cur.filter((x) => x !== o.id) : [...cur, o.id]; if (next.length) updateProfile({ summary_outputs: next }); }}>{o.label}: {on ? "On" : "Off"}</Button>
-          ); })}
-          <Button variant="choice" size="tap" aria-pressed={!!p?.voice_first} onClick={() => updateProfile({ voice_first: !p?.voice_first })}>Voice first: {p?.voice_first ? "On" : "Off"}</Button>
-        </div>
+        <h2 id="acc" className="text-xl font-bold">Accessibility</h2>
+        <p className="mt-2">Summaries shown as: {outputsOf(p).join(", ")}.</p>
+        <p className="mt-1">Text size, contrast, tap targets, speech speed, captions and toolkit connection are on the Accessibility page.</p>
+        <Button asChild variant="big" size="tap" className="mt-3 w-full"><Link to="/accessibility">Accessibility settings</Link></Button>
       </section>
 
       <section aria-labelledby="learn" className="rounded-2xl border-2 border-foreground bg-card p-4 text-lg">
