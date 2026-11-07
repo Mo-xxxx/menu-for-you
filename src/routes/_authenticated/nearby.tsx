@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
 import { formatDistance, formatPrice, walkMinutes } from "@/lib/dining";
-import type { SafeItem } from "@/lib/dining.functions";
+import { rankedRestaurants, moodLabel } from "@/lib/restaurant-ranking";
 import { FavouriteMenus } from "@/components/FavouriteMenus";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
@@ -37,14 +37,7 @@ function Nearby() {
     },
   });
 
-  const groups = useMemo(() => {
-    const m = new Map<string, { id: string; name: string; cuisine: string; distance: number; items: SafeItem[] }>();
-    for (const it of data?.items ?? []) {
-      const g = m.get(it.restaurant_id) ?? { id: it.restaurant_id, name: it.restaurant_name, cuisine: it.cuisine, distance: it.distance_m, items: [] };
-      g.items.push(it); m.set(it.restaurant_id, g);
-    }
-    return [...m.values()].sort((a, b) => a.distance - b.distance);
-  }, [data]);
+  const groups = useMemo(() => rankedRestaurants(data?.items ?? []), [data]);
 
   const { data: coords } = useQuery({
     queryKey: ["restaurant-coords", groups.map((g) => g.id).join(",")],
@@ -108,6 +101,7 @@ function Nearby() {
 
   return (
     <Screen step={2} total={4} title={sel || selOther ? `${selectedMarker ? `${selectedMarker}. ` : ""}${sel?.name ?? selOther?.name}` : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
+      {data && <p role="status" className="text-lg"><strong>Your mood:</strong> {moodLabel(data.ctx.mood)}</p>}
       {isLoading || !loc ? <p role="status" className="text-xl">Finding safe food near you…</p>
         : error ? <p role="alert" className="text-xl text-destructive">Something went wrong. Please go back and try again.</p>
         : groups.length === 0 && others.length === 0 && (menus.data?.length ?? 0) === 0 && !live.isLoading && !menus.isLoading ? (

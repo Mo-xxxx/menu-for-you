@@ -40,3 +40,4 @@ use the editor.
 - Include stored real-menu restaurants within the map radius independently of Places search results; their markers open full menus, while recommendation eligibility remains exclusively in the database.
 - Carry the selected map marker through menu links as display-only search data so menu headings and transcription status identify the same restaurant without changing eligibility.
 - Restaurant menu favourites are private per-user bookmarks with owner-scoped access and profile-delete cascade; they never confirm dishes or alter food ranking.
+- Group safe dishes into restaurants using each restaurant's highest database score, with distance only as a tie-breaker, so mood and learned ranking survive grouping.
