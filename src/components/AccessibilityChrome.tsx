@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { useStore } from "@tanstack/react-store";
 import { useAccessibility } from "@/lib/accessibility";
 import { useSpeech } from "@/lib/use-speech";
 import { useTranscript, clearTranscript } from "@/lib/speech-bus";
