@@ -5,6 +5,7 @@ import { PictureSummary, outputsOf } from "@/components/DishSummary";
 import { Screen } from "@/components/Screen";
 import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
+import { useAccessibility } from "@/lib/accessibility";
 import { useSpeech } from "@/lib/use-speech";
 import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPrice, reasonText } from "@/lib/dining";
 import { moodLabel } from "@/lib/restaurant-ranking";
@@ -19,11 +20,12 @@ function Top() {
   const { ctx } = Route.useSearch();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const a = useAccessibility();
   const { data, isLoading, error, refetch } = useSafeItems(ctx);
   const { speak } = useSpeech();
   const top = (data?.items ?? []).slice(0, 3);
   const diet = profile?.diet_tags ?? [];
-  const out = outputsOf(profile);
+  const out = outputsOf(profile, a.pictureSummaries);
   const say = (it: (typeof top)[number]) => audioSummary(it, diet) + " " + (data ? reasonText(it.reason_code, data.ctx.weather, data.ctx.mood) : "");
 
   return (

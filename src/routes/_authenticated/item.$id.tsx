@@ -8,6 +8,7 @@ import { Screen } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
 import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
+import { useAccessibility } from "@/lib/accessibility";
 import { useSpeech } from "@/lib/use-speech";
 import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPrice, reasonText } from "@/lib/dining";
 
@@ -23,6 +24,7 @@ function Item() {
   const { userId } = Route.useRouteContext();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const a = useAccessibility();
   const { data, isLoading, error, refetch } = useSafeItems(ctx);
   const { speak } = useSpeech();
   const it = data?.items.find((x) => x.item_id === id);
@@ -46,7 +48,7 @@ function Item() {
         <p role="alert" className="text-lg">This dish is not available for your settings.</p>
       ) : (
         <>
-          {outputsOf(profile).includes("pictures") && <PictureSummary price={it.price} distance={it.distance_m} dietText={dietMatchText(it.diet_tags, profile?.diet_tags ?? [])} ingredients={it.key_ingredients} />}
+          {outputsOf(profile, a.pictureSummaries).includes("pictures") && <PictureSummary price={it.price} distance={it.distance_m} dietText={dietMatchText(it.diet_tags, profile?.diet_tags ?? [])} ingredients={it.key_ingredients} />}
           <p className="text-xl">{formatPrice(it.price)} · {formatDistance(it.distance_m)} · {it.restaurant_name}</p>
           <p className="text-lg">✓ {dietMatchText(it.diet_tags, profile?.diet_tags ?? [])}</p>
           <p className="text-lg"><strong>Why:</strong> {data && reasonText(it.reason_code, data.ctx.weather, data.ctx.mood)}</p>
