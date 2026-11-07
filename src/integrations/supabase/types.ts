@@ -435,6 +435,10 @@ export type Database = {
           summary_text: string
         }[]
       }
+      ingredient_allergens: {
+        Args: { p_group: string; p_name: string }
+        Returns: string[]
+      }
       review_menu_item: {
         Args: { p_item: string; p_ok: boolean }
         Returns: undefined
