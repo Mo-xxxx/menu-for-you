@@ -18,3 +18,4 @@
 - [x] Summarise all saved personal data in the final record, with read-aloud and a complete download; signed-in download and mobile display verified
 - [x] Record explicit restaurant choices privately and include them in the final personal record; signed-in save, export, and removal verified
 - [x] Improve favourite-aware ranking after dietary safety filters and add selected-menu recommendations using existing website/photo reads; 45 tests passed, fresh signed-in request verified (no matching checked dishes for this profile)
+- [ ] Show selected-menu recommendations directly from the saved profile without requiring a mood request; preserve all food checks and output preferences
