@@ -42,3 +42,4 @@ use the editor.
 - Restaurant menu favourites are private per-user bookmarks with owner-scoped access and profile-delete cascade; they never confirm dishes or alter food ranking.
 - Group safe dishes into restaurants using each restaurant's highest database score, with distance only as a tie-breaker, so mood and learned ranking survive grouping.
 - Search centre comes only from device location or a user-chosen place (shared via localStorage in use-location.ts); never a hidden fixed-city fallback, so results match where the user really is.
+- Accessibility settings are owned at runtime by the browser store in `src/lib/accessibility.ts` (applied as data attributes on `<html>`); the saved profile only seeds a device that has no choices of its own, and the accessibility toolkit adapters in `src/lib/toolkit/` switch that same store rather than a copy, so any change is visible immediately and never touches safety filtering.
