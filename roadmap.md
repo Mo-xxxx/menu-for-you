@@ -9,3 +9,8 @@
 - [x] Match map numbers to menu headings and website/photo transcription messages
 - [x] Save and remove favourite restaurant menus, retrieve them in Nearby and My data, and include them in data export; signed-in save/reload/retrieve/remove verified
 - [x] Preserve mood-aware database ranking in restaurant order and show the chosen mood on Nearby and Best 3
+- [x] Stage 1: real device location as search centre, say/type postcode when refused, live "Updating nearby places" note
+- [ ] Stage 1b: save Google places by place id and auto-refresh menus older than 30 days / "Refresh menu"
+- [ ] Stage 2: background website/PDF menu queue with robots.txt and rate limits
+- [ ] Stage 3: private photo/screenshot/PDF uploads with editable review before saving
+- [ ] Stage 4: favourite → personal versioned menu file (edit, undo, download, delete, upstream-change notice)
