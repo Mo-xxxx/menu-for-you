@@ -35,3 +35,5 @@ use the editor.
 - Speech parsing and summary formatting live in `src/lib/dining.ts` (browser-safe, unit-tested).
 - Google Places and Weather calls go through signed-in server functions in `src/lib/maps.functions.ts`; the browser key is used only to draw the map. Places without checked menus are never presented as safe.
 - Menus are read by AI from photos (`menu-photo.functions.ts`) or the place's website (`menu-website.functions.ts`), saved via `menu-store.server.ts` as ai_inferred + review_status pending; only person-confirmed dishes reach `find_safe_items`. AI "possible allergens" become "may contain" ingredient rows.
+
+- Menu browsing is separate from recommendations: preserve the request context through uploads and reviews, and invalidate menu/status/recommendation queries after changes so the journey stays current without bypassing database safety checks.

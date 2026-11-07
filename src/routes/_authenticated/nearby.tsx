@@ -16,7 +16,7 @@ import type { SafeItem } from "@/lib/dining.functions";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
-  head: () => ({ meta: [{ title: "Places near you — Dining Assistant" }, { name: "description", content: "Map and list of nearby places with food that is safe for you." }] }),
+  head: () => ({ meta: [{ title: "Places near you — Dining Assistant" }, { name: "description", content: "Map and list of nearby places with food that is safe for you.", { property: "og:title", content: "Places near you — Dining Assistant" }, { property: "og:description", content: "Map and list of nearby places with food that is safe for you." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: Nearby,
 });
 

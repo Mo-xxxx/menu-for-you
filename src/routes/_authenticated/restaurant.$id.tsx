@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/restaurant/$id")({
     { name: "description", content: "Full menu for this restaurant, with dishes a person has checked." },
     { property: "og:title", content: "Restaurant menu — Dining Assistant" },
     { property: "og:description", content: "Full menu for this restaurant, with dishes a person has checked." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
   ] }),
   component: MenuPage,
 });
