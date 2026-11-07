@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedNearbyRouteImport } from './routes/_authenticated/nearby'
 import { Route as AuthenticatedRequestRouteImport } from './routes/_authenticated/request'
 import { Route as AuthenticatedSetupRouteImport } from './routes/_authenticated/setup'
 import { Route as AuthenticatedStartRouteImport } from './routes/_authenticated/start'
+import { Route as AuthenticatedTopRouteImport } from './routes/_authenticated/top'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedNearbyRoute = AuthenticatedNearbyRouteImport.update({
+  id: '/nearby',
+  path: '/nearby',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRequestRoute = AuthenticatedRequestRouteImport.update({
   id: '/request',
@@ -45,43 +52,57 @@ const AuthenticatedStartRoute = AuthenticatedStartRouteImport.update({
   path: '/start',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTopRoute = AuthenticatedTopRouteImport.update({
+  id: '/top',
+  path: '/top',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nearby': typeof AuthenticatedNearbyRoute
   '/request': typeof AuthenticatedRequestRoute
   '/setup': typeof AuthenticatedSetupRoute
   '/start': typeof AuthenticatedStartRoute
+  '/top': typeof AuthenticatedTopRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nearby': typeof AuthenticatedNearbyRoute
   '/request': typeof AuthenticatedRequestRoute
   '/setup': typeof AuthenticatedSetupRoute
   '/start': typeof AuthenticatedStartRoute
+  '/top': typeof AuthenticatedTopRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/nearby': typeof AuthenticatedNearbyRoute
   '/_authenticated/request': typeof AuthenticatedRequestRoute
   '/_authenticated/setup': typeof AuthenticatedSetupRoute
   '/_authenticated/start': typeof AuthenticatedStartRoute
+  '/_authenticated/top': typeof AuthenticatedTopRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/request' | '/setup' | '/start'
+  fullPaths:
+    '/' | '/auth' | '/nearby' | '/request' | '/setup' | '/start' | '/top'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/request' | '/setup' | '/start'
+  to: '/' | '/auth' | '/nearby' | '/request' | '/setup' | '/start' | '/top'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/nearby'
     | '/_authenticated/request'
     | '/_authenticated/setup'
     | '/_authenticated/start'
+    | '/_authenticated/top'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -113,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/nearby': {
+      id: '/_authenticated/nearby'
+      path: '/nearby'
+      fullPath: '/nearby'
+      preLoaderRoute: typeof AuthenticatedNearbyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/request': {
       id: '/_authenticated/request'
       path: '/request'
@@ -134,19 +162,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStartRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/top': {
+      id: '/_authenticated/top'
+      path: '/top'
+      fullPath: '/top'
+      preLoaderRoute: typeof AuthenticatedTopRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedNearbyRoute: typeof AuthenticatedNearbyRoute
   AuthenticatedRequestRoute: typeof AuthenticatedRequestRoute
   AuthenticatedSetupRoute: typeof AuthenticatedSetupRoute
   AuthenticatedStartRoute: typeof AuthenticatedStartRoute
+  AuthenticatedTopRoute: typeof AuthenticatedTopRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedNearbyRoute: AuthenticatedNearbyRoute,
   AuthenticatedRequestRoute: AuthenticatedRequestRoute,
   AuthenticatedSetupRoute: AuthenticatedSetupRoute,
   AuthenticatedStartRoute: AuthenticatedStartRoute,
+  AuthenticatedTopRoute: AuthenticatedTopRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
