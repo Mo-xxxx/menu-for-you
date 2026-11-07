@@ -14,4 +14,4 @@
 - [ ] Stage 2: background website/PDF menu queue with robots.txt and rate limits
 - [ ] Stage 3: private photo/screenshot/PDF uploads with editable review before saving
 - [ ] Stage 4: favourite → personal versioned menu file (edit, undo, download, delete, upstream-change notice)
-- [ ] Connect the app to the AI4A11y accessibility toolkit (live adapter control + token)
+- [x] Connect the app to the AI4A11y accessibility toolkit (live adapter control + token)
