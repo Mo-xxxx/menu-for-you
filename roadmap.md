@@ -15,3 +15,4 @@
 - [ ] Stage 3: private photo/screenshot/PDF uploads with editable review before saving
 - [ ] Stage 4: favourite → personal versioned menu file (edit, undo, download, delete, upstream-change notice)
 - [x] Connect the app to the AI4A11y accessibility toolkit (live adapter control + token)
+- [ ] Summarise all saved personal data in the final record, with read-aloud and a complete download
