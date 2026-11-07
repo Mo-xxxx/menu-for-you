@@ -136,3 +136,20 @@ export const CONFIDENCE_LABEL: Record<string, { label: string; desc: string }> =
   restaurant_stated: { label: "Restaurant-stated", desc: "The restaurant lists these allergens. Not independently checked." },
   ai_inferred: { label: "AI-inferred · Unverified", desc: "Read by AI from a menu photo and not checked by anyone. This may be wrong. Never treat it as guaranteed safe." },
 };
+
+/** Spoken text for one dish on a menu page. Order: name, price, diet, key ingredients, then check status. */
+export function menuDishSpeech(d: { name: string; price: number | null; diet_tags: string[]; ingredients: string[]; status: "confirmed" | "pending" | "sample" }) {
+  return [
+    `${d.name}.`,
+    d.price === null ? "No price shown." : `${formatPrice(d.price)}.`,
+    d.diet_tags.length ? `Menu says ${d.diet_tags.join(", ")}.` : "No diet labels on the menu.",
+    `Ingredients: ${d.ingredients.slice(0, 6).join(", ") || "not listed"}.`,
+    d.status === "confirmed" ? "Confirmed by a person." : d.status === "pending" ? "Not checked yet. Read by AI, may be wrong." : "Sample dish.",
+  ].join(" ");
+}
+
+/** Spoken summary of a whole menu page, before the dishes. */
+export function menuOverviewSpeech(m: { name: string; total: number; confirmed: number; cheapest: number | null; dearest: number | null }) {
+  const prices = m.cheapest === null ? "" : m.cheapest === m.dearest ? ` Dishes cost ${formatPrice(m.cheapest)}.` : ` Prices go from ${formatPrice(m.cheapest)} to ${formatPrice(m.dearest!)}.`;
+  return `${m.name}. ${m.total} ${m.total === 1 ? "dish" : "dishes"} on file, ${m.confirmed} confirmed by a person.${prices} Allergens are not guaranteed. Always check with the restaurant.`;
+}
