@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Download, LogOut, Minus, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { OUTPUT_OPTIONS, outputsOf } from "@/components/DishSummary";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
@@ -26,7 +27,7 @@ function MyData() {
     queryFn: async () => (await supabase.from("learned_preferences").select("*").order("weight", { ascending: false })).data ?? [],
   });
 
-  async function updateProfile(patch: { text_size?: string; high_contrast?: boolean; voice_first?: boolean }) {
+  async function updateProfile(patch: { text_size?: string; high_contrast?: boolean; voice_first?: boolean; summary_outputs?: string[] }) {
     const { error } = await supabase.from("profiles").update(patch).eq("user_id", userId);
     if (error) { toast.error("Could not save."); return; }
     qc.invalidateQueries({ queryKey: ["profile"] });
@@ -85,6 +86,10 @@ function MyData() {
         </div>
         <div className="mt-3 grid gap-2">
           <Button variant="choice" size="tap" aria-pressed={!!p?.high_contrast} onClick={() => updateProfile({ high_contrast: !p?.high_contrast })}>High contrast: {p?.high_contrast ? "On" : "Off"}</Button>
+          <p className="mt-2 font-bold">Show summaries as</p>
+          {OUTPUT_OPTIONS.map((o) => { const cur = outputsOf(p); const on = cur.includes(o.id); return (
+            <Button key={o.id} variant="choice" size="tap" aria-pressed={on} onClick={() => { const next = on ? cur.filter((x) => x !== o.id) : [...cur, o.id]; if (next.length) updateProfile({ summary_outputs: next }); }}>{o.label}: {on ? "On" : "Off"}</Button>
+          ); })}
           <Button variant="choice" size="tap" aria-pressed={!!p?.voice_first} onClick={() => updateProfile({ voice_first: !p?.voice_first })}>Voice first: {p?.voice_first ? "On" : "Off"}</Button>
         </div>
       </section>

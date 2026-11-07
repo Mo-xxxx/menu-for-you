@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, Bookmark, Heart, SkipForward, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PictureSummary, outputsOf } from "@/components/DishSummary";
 import { Screen } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
 import { useSafeItems } from "@/lib/use-safe-items";
@@ -45,6 +46,7 @@ function Item() {
         <p role="alert" className="text-lg">This dish is not available for your settings.</p>
       ) : (
         <>
+          {outputsOf(profile).includes("pictures") && <PictureSummary price={it.price} distance={it.distance_m} dietText={dietMatchText(it.diet_tags, profile?.diet_tags ?? [])} ingredients={it.key_ingredients} />}
           <p className="text-xl">{formatPrice(it.price)} · {formatDistance(it.distance_m)} · {it.restaurant_name}</p>
           <p className="text-lg">✓ {dietMatchText(it.diet_tags, profile?.diet_tags ?? [])}</p>
           <p className="text-lg"><strong>Why:</strong> {reasonText(it.reason_code, data!.ctx.weather, data!.ctx.mood)}</p>
