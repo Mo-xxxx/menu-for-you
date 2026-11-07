@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { Camera, AlertTriangle, X, Undo2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { extractMenuFromPhoto, type ExtractedDish } from "@/lib/menu-photo.functions";
 import { formatPrice } from "@/lib/dining";
@@ -21,7 +22,7 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
   const qc = useQueryClient();
   const extract = useServerFn(extractMenuFromPhoto);
   const [photos, setPhotos] = useState<string[]>([]);
-  const [state, setState] = useState<{ status: "idle" | "reading" | "done" | "error"; message?: string; dishes?: ExtractedDish[]; saved?: number }>({ status: "idle" });
+  const [state, setState] = useState<{ status: "idle" | "reading" | "done" | "error"; message?: string; dishes?: ExtractedDish[]; saved?: number; restaurantId?: string }>({ status: "idle" });
 
   async function onFiles(files: FileList | null) {
     if (!files?.length) return;
@@ -42,7 +43,8 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
     try {
       const r = await extract({ data: { placeId, images: photos } });
       if (!r.ok) { setState({ status: "error", message: r.error }); return; }
-      setState({ status: "done", dishes: r.dishes, saved: r.saved });
+      setState({ status: "done", dishes: r.dishes, saved: r.saved, restaurantId: r.restaurantId });
+      qc.invalidateQueries({ queryKey: ["place-menu"] });
       setPhotos([]);
       qc.invalidateQueries({ queryKey: ["safe"] });
     } catch (e) {
@@ -83,7 +85,8 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
         {state.status === "error" && <p role="alert" className="text-lg font-bold text-destructive">{state.message}</p>}
         {state.status === "done" && (
           <div className="flex flex-col gap-3">
-            <p className="text-lg font-bold">I read {state.dishes?.length} dishes and saved {state.saved} with prices.</p>
+            <p className="text-lg font-bold">I read {state.dishes?.length} dishes and saved {state.saved} with prices. They now wait for a person to confirm them.</p>
+            {state.restaurantId && <Button asChild variant="big" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: state.restaurantId }} search={{ ctx: "" }}>Check these dishes</Link></Button>}
             <div className="flex gap-3 rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
               <AlertTriangle aria-hidden className="size-8 shrink-0" />
               <p><strong>AI-inferred and unverified — not guaranteed safe.</strong> AI can misread menus and miss allergens. Always confirm allergens with the restaurant.</p>
