@@ -26,7 +26,7 @@ beforeAll(async () => {
     INSERT INTO ingredients VALUES ('44444444-4444-4444-4444-444444444444','may contain peanuts','peanuts');
     INSERT INTO menu_item_ingredients VALUES ('00000000-0000-0000-0000-000000000005','44444444-4444-4444-4444-444444444444',true);
     INSERT INTO menu_items VALUES ('00000000-0000-0000-0000-000000000006','${otherRestaurant}','other',10,ARRAY['vegan'],'confirmed',true,false,'','ai_inferred');`);
-  const migration = readFileSync(new URL("../../drizzle/migrations/0006_restaurant_choice_records_and_favourite_ranking.sql", import.meta.url), "utf8");
+  const migration = readFileSync("drizzle/migrations/0006_restaurant_choice_records_and_favourite_ranking.sql", "utf8");
   const start = migration.indexOf("CREATE OR REPLACE FUNCTION public.find_safe_items");
   if (start < 0) throw new Error("Recommendation function missing from migration");
   await db.exec(migration.slice(start));
