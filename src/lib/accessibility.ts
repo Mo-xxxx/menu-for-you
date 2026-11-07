@@ -105,6 +105,7 @@ export function applySettings(next: AccessSettings = settings) {
   d["contrast"] = next.highContrast ? "high" : "standard";
   d["largeTargets"] = next.largeTargets ? "on" : "off";
   d["reduceMotion"] = next.reduceMotion ? "on" : "off";
+  d["captions"] = next.captions ? "on" : "off";
 }
 
 function commit(next: AccessSettings) {

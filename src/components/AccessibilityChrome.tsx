@@ -35,10 +35,10 @@ export function CaptionsPanel() {
     <section
       aria-label="Captions"
       aria-live="polite"
-      className="pointer-events-auto fixed inset-x-0 bottom-0 z-50 border-t-4 border-foreground bg-card/95 px-4 py-3 backdrop-blur"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 border-t-4 border-foreground bg-card/95 px-4 py-3 backdrop-blur"
     >
       <div className="mx-auto flex max-w-xl flex-col gap-1">
-        <div className="flex items-center justify-between gap-3">
+        <div className="pointer-events-auto flex items-center justify-between gap-3">
           <h2 className="text-base font-bold uppercase tracking-wide">Captions</h2>
           <Button variant="bigOutline" size="tap" className="min-h-10 px-3 text-base" onClick={clearTranscript}>
             Clear

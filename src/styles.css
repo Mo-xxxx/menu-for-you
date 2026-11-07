@@ -112,6 +112,9 @@ html[data-large-targets="on"] select,
 html[data-large-targets="on"] textarea,
 html[data-large-targets="on"] summary { min-height: 3.5rem; }
 
+/* Captions sit at the bottom of the screen, so leave room for them. */
+html[data-captions="on"] main { padding-bottom: 16rem; }
+
 /* Reduce motion: no animations, transitions or smooth scrolling. */
 html[data-reduce-motion="on"] *,
 html[data-reduce-motion="on"] *::before,
