@@ -14,6 +14,7 @@ import { useProfile } from "@/lib/use-profile";
 import { formatDistance, formatPrice, walkMinutes } from "@/lib/dining";
 import { rankedRestaurants, moodLabel } from "@/lib/restaurant-ranking";
 import { FavouriteMenus } from "@/components/FavouriteMenus";
+import { LocationPicker } from "@/components/LocationPicker";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
@@ -26,7 +27,7 @@ function Nearby() {
   const { userId } = Route.useRouteContext();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data, isLoading, error, loc } = useSafeItems(ctx);
+  const { data, isLoading, error, loc, locStatus, retryLocation } = useSafeItems(ctx);
   const [selected, setSelected] = useState<string | null>(null);
   const menus = useQuery({
     queryKey: ["menus-on-file"],
@@ -102,7 +103,9 @@ function Nearby() {
   return (
     <Screen step={2} total={4} title={sel || selOther ? `${selectedMarker ? `${selectedMarker}. ` : ""}${sel?.name ?? selOther?.name}` : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
       {data && <p role="status" className="text-lg"><strong>Your mood:</strong> {moodLabel(data.ctx.mood)}</p>}
-      {isLoading || !loc ? <p role="status" className="text-xl">Finding safe food near you…</p>
+      {(locStatus === "denied" || locStatus === "manual") && <LocationPicker onRetry={retryLocation} current={locStatus === "manual" ? (loc?.label ?? null) : null} />}
+      <p role="status" aria-live="polite" className="min-h-8 text-lg">{loc && (live.isFetching || menus.isFetching) ? "Updating nearby places…" : ""}</p>
+      {locStatus === "denied" ? null : isLoading || !loc ? <p role="status" className="text-xl">{locStatus === "asking" ? "Asking for your location…" : "Finding safe food near you…"}</p>
         : error ? <p role="alert" className="text-xl text-destructive">Something went wrong. Please go back and try again.</p>
         : groups.length === 0 && others.length === 0 && (menus.data?.length ?? 0) === 0 && !live.isLoading && !menus.isLoading ? (
           <p className="rounded-xl border-2 border-foreground bg-card p-4 text-lg">Nothing nearby matches all your needs right now. Try a larger distance or budget in My data.</p>

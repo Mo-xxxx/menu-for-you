@@ -48,3 +48,20 @@ export const currentWeather = createServerFn({ method: "POST" })
     if (typeof j.temperature?.degrees !== "number") return null;
     return classifyWeather(j.temperature.degrees, j.weatherCondition?.type ?? "", j.weatherCondition?.description?.text ?? "");
   });
+
+/** Turn a spoken or typed postcode / place name into a search centre. */
+export const geocodePlace = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { query: string }) => { const q = String(d.query ?? "").trim().slice(0, 120); if (!q) throw new Error("Empty place"); return { query: q }; })
+  .handler(async ({ data }) => {
+    const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchText`, {
+      method: "POST",
+      headers: { ...creds(), "Content-Type": "application/json", "X-Goog-FieldMask": "places.location,places.formattedAddress,places.displayName" },
+      body: JSON.stringify({ textQuery: data.query, regionCode: "GB", maxResultCount: 1 }),
+    });
+    if (!res.ok) { console.error(`Geocode failed [${res.status}]: ${await res.text()}`); throw new Error("Place search unavailable"); }
+    const j = (await res.json()) as { places?: Array<{ location: { latitude: number; longitude: number }; formattedAddress?: string; displayName?: { text: string } }> };
+    const p = j.places?.[0];
+    if (!p) return null;
+    return { lat: p.location.latitude, lng: p.location.longitude, label: p.displayName?.text ?? p.formattedAddress ?? data.query };
+  });

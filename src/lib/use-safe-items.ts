@@ -4,12 +4,12 @@ import { findSafeItems } from "./dining.functions";
 import { useLocation } from "./use-location";
 
 export function useSafeItems(ctxId: string) {
-  const loc = useLocation();
+  const { loc, status, retry } = useLocation();
   const fn = useServerFn(findSafeItems);
   const q = useQuery({
     queryKey: ["safe", ctxId, loc?.actual.lat, loc?.actual.lng],
     enabled: !!loc && !!ctxId,
     queryFn: () => fn({ data: { ctxId, lat: loc!.actual.lat, lng: loc!.actual.lng } }),
   });
-  return { ...q, loc };
+  return { ...q, loc, locStatus: status, retryLocation: retry };
 }

@@ -27,7 +27,7 @@ function RequestPage() {
   const [mode, setMode] = useState<"mood" | "speak">("mood");
   const [heard, setHeard] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const loc = useLocation();
+  const { loc } = useLocation();
   const weatherFn = useServerFn(currentWeather);
   const live = useQuery({
     queryKey: ["weather", loc?.actual.lat.toFixed(2), loc?.actual.lng.toFixed(2)],
