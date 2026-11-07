@@ -76,7 +76,8 @@ export const extractMenuFromPhoto = createServerFn({ method: "POST" })
         ] }],
         text: { format: { type: "json_schema", name: "menu", strict: true, schema } },
       });
-      const text = res.output_text ?? "";
+      const out = (res as { output?: Array<{ type: string; content?: Array<{ type: string; text?: string }> }> }).output ?? [];
+      const text = out.flatMap((o) => o.content ?? []).filter((c) => c.type === "output_text").map((c) => c.text ?? "").join("");
       parsed = JSON.parse(text);
     } catch (e) {
       if (e instanceof GatewayError) {
