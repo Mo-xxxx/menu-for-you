@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Undo2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Screen, MicButton, Heard } from "@/components/Screen";
+import { OUTPUT_OPTIONS, outputsOf, type SummaryOutput } from "@/components/DishSummary";
 import { supabase } from "@/integrations/supabase/client";
 import { useSpeech } from "@/lib/use-speech";
 import { useProfile } from "@/lib/use-profile";
@@ -15,10 +16,10 @@ export const Route = createFileRoute("/_authenticated/setup")({
   component: Setup,
 });
 
-type S = { diet: string[]; allergies: string[]; budget: number; distance: number };
+type S = { diet: string[]; allergies: string[]; budget: number; distance: number; outputs: SummaryOutput[] };
 const BUDGETS = [8, 10, 12, 15, 20];
 const DISTANCES = [500, 1000, 1500, 2500];
-const STEPS = ["consent", "diet", "allergies", "budget", "distance"] as const;
+const STEPS = ["consent", "diet", "allergies", "budget", "distance", "outputs"] as const;
 
 function Setup() {
   const navigate = useNavigate();
@@ -27,13 +28,13 @@ function Setup() {
   const { data: profile } = useProfile();
   const speech = useSpeech();
   const [step, setStep] = useState(0);
-  const [s, setS] = useState<S>({ diet: [], allergies: [], budget: 12, distance: 1500 });
+  const [s, setS] = useState<S>({ diet: [], allergies: [], budget: 12, distance: 1500, outputs: ["audio", "text"] });
   const [history, setHistory] = useState<S[]>([]);
   const [heard, setHeard] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (profile) setS({ diet: profile.diet_tags, allergies: profile.allergies, budget: Number(profile.budget_max), distance: profile.max_distance_m });
+    if (profile) setS({ diet: profile.diet_tags, allergies: profile.allergies, budget: Number(profile.budget_max), distance: profile.max_distance_m, outputs: outputsOf(profile) });
   }, [profile]);
   useEffect(() => { setHeard(null); }, [step]);
 
@@ -50,6 +51,10 @@ function Setup() {
       if (kind === "diet") { const d = parseDiet(t); if (d.length) change({ ...s, diet: [...new Set([...s.diet, ...d])] }); }
       if (kind === "allergies") { const a = parseAllergies(t); if (a.length) change({ ...s, allergies: [...new Set([...s.allergies, ...a])] }); }
       if (kind === "budget") { const b = parseBudget(t); if (b) change({ ...s, budget: b }); }
+      if (kind === "outputs") {
+        const o = OUTPUT_OPTIONS.filter((x) => new RegExp(x.id === "audio" ? "audio|voice|hear|listen|sound" : x.id === "pictures" ? "picture|pic|image|photo|icon|visual" : "text|words|read|written", "i").test(t)).map((x) => x.id);
+        if (o.length) change({ ...s, outputs: o });
+      }
       if (kind === "distance") { const d = parseDistance(t); if (d) change({ ...s, distance: Math.min(5000, Math.max(200, d)) }); }
     });
   }
@@ -65,7 +70,7 @@ function Setup() {
     setSaving(true);
     const { error } = await supabase.from("profiles").upsert({
       user_id: userId, consent: true, diet_tags: s.diet, allergies: s.allergies,
-      budget_max: s.budget, max_distance_m: s.distance, setup_complete: true, updated_at: new Date().toISOString(),
+      budget_max: s.budget, max_distance_m: s.distance, summary_outputs: s.outputs, setup_complete: true, updated_at: new Date().toISOString(),
     });
     setSaving(false);
     if (error) { toast.error("Could not save. Please try again."); return; }
@@ -81,8 +86,9 @@ function Setup() {
     allergies: "Do you have any allergies?",
     budget: "What is the most you want to spend on one meal?",
     distance: "How far are you happy to go?",
+    outputs: "How should I show your food summaries?",
   };
-  const prompts = { diet: "For example: “vegan and halal”", allergies: "For example: “peanuts and sesame”", budget: "For example: “twelve pounds”", distance: "For example: “one kilometre” or “ten minutes walk”" } as Record<string, string>;
+  const prompts = { diet: "For example: “vegan and halal”", allergies: "For example: “peanuts and sesame”", budget: "For example: “twelve pounds”", distance: "For example: “one kilometre” or “ten minutes walk”", outputs: "For example: “audio and pictures”" } as Record<string, string>;
 
   return (
     <Screen step={step + 1} total={STEPS.length} title={titles[kind]} onBack={back} hideData={step === 0}>
@@ -114,12 +120,17 @@ function Setup() {
             <ChoiceGrid single options={DISTANCES.map((d) => ({ id: String(d), label: `${formatDistance(d)} (${walkMinutes(d)} min)` }))} selected={[String(s.distance)]} onToggle={(v) => change({ ...s, distance: Number(v) })} />
           )}
 
+          {kind === "outputs" && (
+            <ChoiceGrid options={OUTPUT_OPTIONS.map((o) => ({ id: o.id, label: `${o.label} — ${o.desc}` }))} selected={s.outputs}
+              onToggle={(v) => { const id = v as SummaryOutput; const next = s.outputs.includes(id) ? s.outputs.filter((x) => x !== id) : [...s.outputs, id]; if (next.length) change({ ...s, outputs: next }); else toast("Please keep at least one."); }} />
+          )}
           <p aria-live="polite" className="rounded-xl bg-secondary p-3 text-lg">
             <strong>Saved so far: </strong>
             {kind === "diet" && (s.diet.join(", ") || "no diet")}
             {kind === "allergies" && (s.allergies.map((a) => ALLERGY_OPTIONS.find((o) => o.id === a)?.label).join(", ") || "no allergies")}
             {kind === "budget" && `up to £${s.budget}`}
             {kind === "distance" && formatDistance(s.distance)}
+            {kind === "outputs" && s.outputs.map((o) => OUTPUT_OPTIONS.find((x) => x.id === o)?.label).join(", ")}
           </p>
 
           <div className="mt-auto flex flex-col gap-3">

@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN summary_outputs text[] NOT NULL DEFAULT '{audio,text}';

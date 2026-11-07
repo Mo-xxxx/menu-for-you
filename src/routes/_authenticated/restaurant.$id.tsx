@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, Check, CheckCircle2, Clock, X, Undo2, Volume2 } from "lucide-react";
 import { useSpeech } from "@/lib/use-speech";
+import { useProfile } from "@/lib/use-profile";
+import { PictureSummary, outputsOf } from "@/components/DishSummary";
 import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +29,8 @@ function MenuPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { speak } = useSpeech();
+  const { data: profile } = useProfile();
+  const out = outputsOf(profile);
   const q = useQuery({
     queryKey: ["menu-page", id],
     queryFn: async () => {
@@ -91,6 +95,7 @@ function MenuPage() {
                 <li key={d.id} className={`rounded-2xl border-2 border-foreground bg-card p-4 text-lg ${ok ? "" : "border-dashed"}`}>
                   <span className="block text-xl font-bold">{d.name} · {formatPrice(Number(d.price))}</span>
                   <span className="block">{ok ? "✓ Confirmed by a person" : "⏳ Waiting for a person to check"} · {d.source === "sample" ? "Sample" : "AI-inferred"}</span>
+                  {out.includes("pictures") && <PictureSummary price={Number(d.price)} dietText={d.diet_tags.length ? `Menu says ${d.diet_tags.join(", ")}` : "No diet labels"} ingredients={ings} />}
                   {d.summary_text && <span className="block">{d.summary_text}</span>}
                   {d.diet_tags.length > 0 && <span className="block">Menu says: {d.diet_tags.join(", ")}</span>}
                   {ings.length > 0 && <span className="block">Ingredients: {ings.join(", ")}</span>}
