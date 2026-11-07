@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/Screen";
 import { LiveMap, type MapPlace } from "@/components/LiveMap";
 import { nearbyPlaces } from "@/lib/maps.functions";
+import { MenuPhotoUpload } from "@/components/MenuPhotoUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
@@ -70,8 +71,9 @@ function Nearby() {
           <>
             <p className="text-lg">{selOther.type}{selOther.openNow === null ? "" : selOther.openNow ? " · Open now" : " · Closed now"}</p>
             <p className="rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
-              <strong>Menu not checked yet.</strong> I don't have this place's menu, so I can't tell you which dishes are safe for you. Please ask the restaurant directly.
+              <strong>Menu not checked yet.</strong> I don't have this place's menu, so I can't tell you which dishes are safe for you. Please ask the restaurant directly, or add a menu photo below.
             </p>
+            <MenuPhotoUpload placeId={selOther.id} placeName={selOther.name} />
           </>
         ) : sel ? (
           <>
