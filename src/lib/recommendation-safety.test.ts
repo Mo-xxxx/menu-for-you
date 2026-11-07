@@ -26,8 +26,8 @@ beforeAll(async () => {
     INSERT INTO ingredients VALUES ('44444444-4444-4444-4444-444444444444','may contain peanuts','peanuts');
     INSERT INTO menu_item_ingredients VALUES ('00000000-0000-0000-0000-000000000005','44444444-4444-4444-4444-444444444444',true);
     INSERT INTO menu_items VALUES ('00000000-0000-0000-0000-000000000006','${otherRestaurant}','other',10,ARRAY['vegan'],'confirmed',true,false,'','ai_inferred');`);
-  const migration = readFileSync("drizzle/migrations/0006_restaurant_choice_records_and_favourite_ranking.sql", "utf8");
-  const start = migration.indexOf("CREATE OR REPLACE FUNCTION public.find_safe_items");
+  const migration = readFileSync("drizzle/migrations/0007_allergen_keyword_matching.sql", "utf8");
+  const start = migration.indexOf("CREATE OR REPLACE FUNCTION public.ingredient_allergens");
   if (start < 0) throw new Error("Recommendation function missing from migration");
   await db.exec(migration.slice(start));
 }, 30000);
@@ -46,4 +46,9 @@ it("favourites never bypass the vegan diet", async () => expect((await find()).s
 it("favourites never bypass the £15 budget", async () => expect((await find()).some(r => r.item_name === "dish-3")).toBe(false));
 it("AI-read pending dishes never become recommendations through favourites", async () => expect((await find()).some(r => r.item_name === "dish-4")).toBe(false));
 it("may-contain peanuts exclude a dish for a peanut allergy", async () => expect((await find()).some(r => r.item_name === "dish-5")).toBe(false));
-it("favourites never bypass the 1500 metre limit", async () => expect(await find(52)).toEqual([]));
+it("favourites never bypass the 1500 metre limit", async () => expect(await find(52)).toEqual([]));it("untagged ingredients like cheese are caught for a milk allergy", async () => {
+  await db.exec(`UPDATE profiles SET allergies=ARRAY['peanuts','dairy'];
+    INSERT INTO ingredients VALUES ('55555555-5555-5555-5555-555555555555','mozzarella',NULL);
+    INSERT INTO menu_item_ingredients VALUES ('00000000-0000-0000-0000-000000000001','55555555-5555-5555-5555-555555555555',false);`);
+  expect((await find()).some(r => r.item_name === "dish-1")).toBe(false);
+});

@@ -15,7 +15,7 @@ export function MenuRecommendations({ restaurantId, ctx, diet }: { restaurantId:
   const { data: profile } = useProfile();
   const accessibility = useAccessibility();
   const outputs = outputsOf(profile, accessibility.pictureSummaries);
-  const top = q.data?.items.slice(0, 3) ?? [];
+  const top = q.data?.items.slice(0, 7) ?? [];
   const summary = top.map((item, i) => `Option ${i + 1}. ${audioSummary(item, diet)} ${reasonText(item.reason_code, q.data?.ctx.weather ?? "", q.data?.ctx.mood ?? "")}`).join(" ");
   return <section aria-labelledby="menu-recommendations" className="flex flex-col gap-3">
     <h2 id="menu-recommendations" className="text-2xl font-bold">My best dishes here</h2>
