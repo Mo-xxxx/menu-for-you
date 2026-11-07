@@ -64,14 +64,12 @@ function RequestPage() {
         </>
       ) : (
         <>
-          <MicButton listening={speech.listening} onClick={() => speech.listening ? speech.stop() : speech.listen((t: string) => { setHeard(t); speech.speak(`I heard you're feeling ${moodFromWords(t)}.`); })} label="Tap to speak" />
+          <MicButton listening={speech.listening} onClick={() => speech.listening ? speech.stop() : speech.listen((t: string) => { setHeard(t); speech.speak(`I heard you're feeling ${moodFromWords(t)}. Finding food now.`); void go(moodFromWords(t), t); })} label="Tap to speak" />
           <p className="text-center text-lg">For example: “Something warm and light, under £12”</p>
           {speech.error && <p role="alert" className="text-center text-lg font-bold text-destructive">{speech.error}</p>}
           <Heard text={heard} />
-          {heard && <p aria-live="polite" className="text-center text-xl font-bold">I heard you're feeling {moodFromWords(heard)}.</p>}
-          <Button variant="big" size="xl" className="mt-auto justify-center" disabled={!heard || busy} onClick={() => heard && go(moodFromWords(heard), heard)}>
-            Yes, find this
-          </Button>
+          {heard && <p aria-live="polite" className="text-center text-xl font-bold">I heard you're feeling {moodFromWords(heard)}. Finding food now.</p>}
+          {busy && <p role="status" className="text-center text-lg">Finding food for you…</p>}
         </>
       )}
     </Screen>
