@@ -180,3 +180,23 @@ export function moodFromWords(t: string): "low" | "okay" | "good" {
   if (pos > 0 && neg === 0) return "good";
   return "okay";
 }
+
+export type DishGroup = "Vegan" | "Vegetarian" | "Fish and seafood" | "Chicken" | "Meat" | "Other";
+export const DISH_GROUPS: DishGroup[] = ["Vegan", "Vegetarian", "Fish and seafood", "Chicken", "Meat", "Other"];
+
+/** Classifies a dish from its name, diet tags and ingredients. Display only; never affects safety. */
+export function dishGroup(d: { item_name: string; diet_tags: string[]; key_ingredients: string[]; summary_text?: string }): DishGroup {
+  const text = [d.item_name, d.summary_text ?? "", ...d.key_ingredients].join(" ").toLowerCase();
+  const has = (re: RegExp) => re.test(text);
+  if (has(/\b(fish|salmon|tuna|cod|haddock|anchov\w*|sardines?|mackerel|prawns?|shrimps?|crab|lobster|squid|calamari|octopus|mussels?|clams?|scallops?|sea ?bass|trout|hake|seafood)\b/)) return "Fish and seafood";
+  if (has(/\b(chicken|poussin|turkey|duck)\b/)) return "Chicken";
+  if (has(/\b(beef|lamb|pork|bacon|ham|sausages?|steak|mince|chorizo|pepperoni|salami|prosciutto|nduja|’nduja|veal|goat|meatballs?|cured meats?)\b/)) return "Meat";
+  const tags = d.diet_tags.map(t => t.toLowerCase());
+  if (tags.includes("vegan")) return "Vegan";
+  if (tags.includes("vegetarian")) return "Vegetarian";
+  return "Other";
+}
+
+export function groupDishes<T extends { item_name: string; diet_tags: string[]; key_ingredients: string[]; summary_text?: string }>(items: T[]) {
+  return DISH_GROUPS.map(g => ({ group: g, items: items.filter(i => dishGroup(i) === g) })).filter(x => x.items.length > 0);
+}
