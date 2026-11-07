@@ -1,4 +1,4 @@
-import { APP_ID, TOOLKIT_URL } from "./config";
+import { APP_ID, TOOLKIT_SDK_URL, TOOLKIT_URL } from "./config";
 import { ACCESS_ADAPTERS, currentTextSize, type AdapterLike } from "./adapters";
 
 /**
@@ -9,7 +9,7 @@ import { ACCESS_ADAPTERS, currentTextSize, type AdapterLike } from "./adapters";
  * presses Connect, never during server rendering.
  */
 
-type ToolkitStatus = { state: string; message?: string; providerId?: string };
+export type ToolkitStatus = { state: string; message?: string; providerId?: string };
 
 type AdapterSpec = {
   id: string;
@@ -188,7 +188,7 @@ export async function connectToolkit({
       "Dining Assistant helps people find food nearby that is safe for them. These adapters change how the app looks and sounds. Allergy, diet, budget and distance checks are never changed by them.",
   });
 
-  handle = connectToToolkit({
+  const opened = connectToToolkit({
     url: TOOLKIT_URL,
     token: t,
     provider,
@@ -202,9 +202,9 @@ export async function connectToolkit({
       }
     },
   });
-
-  await handle.ready;
-  return { ...handle.status };
+  handle = opened;
+  await opened.ready;
+  return { ...opened.status };
 }
 
 export async function disconnectToolkit(): Promise<void> {

@@ -32,7 +32,7 @@ export const largerText: AdapterLike = {
     return getSettings().textSize !== "normal";
   },
   enable(options = {}) {
-    setSetting("textSize", options.size === "xxl" ? "xxl" : "xl");
+    setSetting("textSize", options["size"] === "xxl" ? "xxl" : "xl");
   },
   disable() {
     setSetting("textSize", "normal");

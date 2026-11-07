@@ -60,14 +60,14 @@ function readStored(): AccessSettings | null {
     if (!raw) return null;
     const p = JSON.parse(raw) as Record<string, unknown>;
     return {
-      textSize: isTextSize(p.textSize) ? p.textSize : DEFAULT_SETTINGS.textSize,
-      highContrast: isBool(p.highContrast) ? p.highContrast : DEFAULT_SETTINGS.highContrast,
-      largeTargets: isBool(p.largeTargets) ? p.largeTargets : DEFAULT_SETTINGS.largeTargets,
-      reduceMotion: isBool(p.reduceMotion) ? p.reduceMotion : DEFAULT_SETTINGS.reduceMotion,
-      speechRate: isSpeechRate(p.speechRate) ? p.speechRate : DEFAULT_SETTINGS.speechRate,
-      autoRead: isBool(p.autoRead) ? p.autoRead : DEFAULT_SETTINGS.autoRead,
-      captions: isBool(p.captions) ? p.captions : DEFAULT_SETTINGS.captions,
-      pictureSummaries: isBool(p.pictureSummaries) ? p.pictureSummaries : DEFAULT_SETTINGS.pictureSummaries,
+      textSize: isTextSize(p["textSize"]) ? p["textSize"] : DEFAULT_SETTINGS.textSize,
+      highContrast: isBool(p["highContrast"]) ? p["highContrast"] : DEFAULT_SETTINGS.highContrast,
+      largeTargets: isBool(p["largeTargets"]) ? p["largeTargets"] : DEFAULT_SETTINGS.largeTargets,
+      reduceMotion: isBool(p["reduceMotion"]) ? p["reduceMotion"] : DEFAULT_SETTINGS.reduceMotion,
+      speechRate: isSpeechRate(p["speechRate"]) ? p["speechRate"] : DEFAULT_SETTINGS.speechRate,
+      autoRead: isBool(p["autoRead"]) ? p["autoRead"] : DEFAULT_SETTINGS.autoRead,
+      captions: isBool(p["captions"]) ? p["captions"] : DEFAULT_SETTINGS.captions,
+      pictureSummaries: isBool(p["pictureSummaries"]) ? p["pictureSummaries"] : DEFAULT_SETTINGS.pictureSummaries,
     };
   } catch {
     return null;
@@ -101,10 +101,10 @@ export function subscribe(fn: () => void): () => void {
 export function applySettings(next: AccessSettings = settings) {
   if (typeof document === "undefined") return;
   const d = document.documentElement.dataset;
-  d.textSize = next.textSize;
-  d.contrast = next.highContrast ? "high" : "standard";
-  d.largeTargets = next.largeTargets ? "on" : "off";
-  d.reduceMotion = next.reduceMotion ? "on" : "off";
+  d["textSize"] = next.textSize;
+  d["contrast"] = next.highContrast ? "high" : "standard";
+  d["largeTargets"] = next.largeTargets ? "on" : "off";
+  d["reduceMotion"] = next.reduceMotion ? "on" : "off";
 }
 
 function commit(next: AccessSettings) {
