@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe } from "lucide-react";
+import { useSpeech } from "@/lib/use-speech";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { importMenuFromWebsite } from "@/lib/menu-website.functions";
@@ -10,6 +11,7 @@ import { importMenuFromWebsite } from "@/lib/menu-website.functions";
 /** For a real place: link to its menu page if one exists, and a button to read its website menu. */
 export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: string }) {
   const qc = useQueryClient();
+  const { speak } = useSpeech();
   const importFn = useServerFn(importMenuFromWebsite);
   const [state, setState] = useState<{ status: "idle" | "reading" | "error" | "done"; message?: string }>({ status: "idle" });
   const existing = useQuery({
@@ -26,8 +28,9 @@ export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: strin
     setState({ status: "reading" });
     try {
       const r = await importFn({ data: { placeId } });
-      if (!r.ok) { setState({ status: "error", message: r.error }); return; }
+      if (!r.ok) { setState({ status: "error", message: r.error }); speak(r.error); return; }
       setState({ status: "done", message: `I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.` });
+      speak(`I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.`);
       qc.invalidateQueries({ queryKey: ["place-menu", placeId] });
     } catch {
       setState({ status: "error", message: "Something went wrong. Please try again." });

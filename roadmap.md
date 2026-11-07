@@ -1,2 +1,2 @@
 - [x] Real menu pages with website/photo import and person review
-- [ ] Read-aloud for menu page, reviews and summaries; show all prices (budget open)
+- [x] Read-aloud for menu page, reviews and summaries; show all prices (budget open)

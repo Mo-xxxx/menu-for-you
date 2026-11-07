@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, Check, CheckCircle2, Clock, X, Undo2 } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Clock, X, Undo2, Volume2 } from "lucide-react";
+import { useSpeech } from "@/lib/use-speech";
 import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
-import { formatPrice } from "@/lib/dining";
+import { formatPrice, menuDishSpeech, menuOverviewSpeech } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/restaurant/$id")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
@@ -25,6 +26,7 @@ function MenuPage() {
   const { ctx } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { speak } = useSpeech();
   const q = useQuery({
     queryKey: ["menu-page", id],
     queryFn: async () => {
@@ -39,6 +41,7 @@ function MenuPage() {
   async function review(itemId: string, ok: boolean, name: string) {
     const { error } = await supabase.rpc("review_menu_item", { p_item: itemId, p_ok: ok });
     if (error) { toast.error("Could not save. Please try again."); return; }
+    speak(ok ? `${name} confirmed. Press Undo if that was a mistake.` : `${name} removed.`);
     toast.success(ok ? `${name} confirmed.` : `${name} removed.`, { action: { label: "Undo", onClick: () => void review(itemId, !ok, name) } });
     qc.invalidateQueries({ queryKey: ["menu-page", id] });
     qc.invalidateQueries({ queryKey: ["safe"] });
@@ -51,6 +54,10 @@ function MenuPage() {
   const confirmed = live.filter((d) => d.review_status === "confirmed").length;
   const pending = live.length - confirmed;
   const isSample = r?.source === "sample";
+  const ingsOf = (d: Dish) => d.menu_item_ingredients.map((x) => x.ingredients?.name).filter((n): n is string => !!n);
+  const dishText = (d: Dish) => menuDishSpeech({ name: d.name, price: Number(d.price), diet_tags: d.diet_tags, ingredients: ingsOf(d), status: isSample ? "sample" : d.review_status === "confirmed" ? "confirmed" : "pending" });
+  const prices = live.map((d) => Number(d.price));
+  const overview = r ? menuOverviewSpeech({ name: r.name, total: live.length, confirmed, cheapest: prices.length ? Math.min(...prices) : null, dearest: prices.length ? Math.max(...prices) : null }) : "";
 
   return (
     <Screen step={2} total={4} title={r?.name ?? "Menu"} onBack={() => navigate({ to: "/nearby", search: { ctx } })}>
@@ -64,6 +71,11 @@ function MenuPage() {
               : confirmed > 0 ? <><strong>Menu checked.</strong> {confirmed} {confirmed === 1 ? "dish has" : "dishes have"} been confirmed by a person{pending ? `, ${pending} still waiting` : ""}.</>
               : <><strong>Menu not checked yet.</strong> AI read {live.length} dishes. A person must confirm each one before I suggest it.</>}</p>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="big" size="tap" onClick={() => speak(overview)}><Volume2 aria-hidden /> Listen to summary</Button>
+            <Button variant="bigOutline" size="tap" disabled={live.length === 0} onClick={() => speak([overview, ...live.map(dishText)].join(" "))}><Volume2 aria-hidden /> Read whole menu</Button>
+          </div>
+          <p className="text-lg">All dishes and prices are shown here, whatever your budget.</p>
           {!isSample && (
             <p className="flex gap-3 rounded-xl border-2 border-foreground bg-card p-4 text-lg">
               <AlertTriangle aria-hidden className="size-8 shrink-0" />
@@ -73,7 +85,7 @@ function MenuPage() {
           {live.length === 0 && <p className="text-lg">No dishes on file for this place.</p>}
           <ul className="flex flex-col gap-3">
             {live.map((d) => {
-              const ings = d.menu_item_ingredients.map((x) => x.ingredients?.name).filter((n): n is string => !!n);
+              const ings = ingsOf(d);
               const ok = d.review_status === "confirmed";
               return (
                 <li key={d.id} className={`rounded-2xl border-2 border-foreground bg-card p-4 text-lg ${ok ? "" : "border-dashed"}`}>
@@ -82,6 +94,7 @@ function MenuPage() {
                   {d.summary_text && <span className="block">{d.summary_text}</span>}
                   {d.diet_tags.length > 0 && <span className="block">Menu says: {d.diet_tags.join(", ")}</span>}
                   {ings.length > 0 && <span className="block">Ingredients: {ings.join(", ")}</span>}
+                  <Button variant="bigOutline" size="tap" className="mt-3 w-full" onClick={() => speak(dishText(d))} aria-label={`Listen to ${d.name}`}><Volume2 aria-hidden /> Listen</Button>
                   {!isSample && (
                     <div className="mt-3 grid grid-cols-2 gap-3">
                       {!ok && <Button variant="big" size="tap" onClick={() => review(d.id, true, d.name)} aria-label={`Confirm ${d.name} matches the menu`}><Check aria-hidden /> Matches menu</Button>}

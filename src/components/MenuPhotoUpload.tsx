@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
-import { Camera, AlertTriangle, X, Undo2 } from "lucide-react";
+import { Camera, AlertTriangle, X, Undo2, Volume2 } from "lucide-react";
+import { useSpeech } from "@/lib/use-speech";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { extractMenuFromPhoto, type ExtractedDish } from "@/lib/menu-photo.functions";
-import { formatPrice } from "@/lib/dining";
+import { formatPrice, menuDishSpeech } from "@/lib/dining";
 
 async function toJpegDataUrl(file: File, max = 1600): Promise<string> {
   const img = await createImageBitmap(file);
@@ -20,6 +21,7 @@ async function toJpegDataUrl(file: File, max = 1600): Promise<string> {
 export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; placeName: string }) {
   const input = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
+  const { speak } = useSpeech();
   const extract = useServerFn(extractMenuFromPhoto);
   const [photos, setPhotos] = useState<string[]>([]);
   const [state, setState] = useState<{ status: "idle" | "reading" | "done" | "error"; message?: string; dishes?: ExtractedDish[]; saved?: number; restaurantId?: string }>({ status: "idle" });
@@ -86,6 +88,7 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
         {state.status === "done" && (
           <div className="flex flex-col gap-3">
             <p className="text-lg font-bold">I read {state.dishes?.length} dishes and saved {state.saved} with prices. They now wait for a person to confirm them.</p>
+            <Button variant="bigOutline" size="xl" className="justify-center" onClick={() => speak([`I read ${state.dishes?.length} dishes. These are AI-inferred and not guaranteed safe.`, ...(state.dishes ?? []).map((d) => menuDishSpeech({ name: d.name, price: d.price, diet_tags: d.diet_tags, ingredients: d.ingredients.map((i) => i.name), status: "pending" }))].join(" "))}><Volume2 aria-hidden /> Listen to what I found</Button>
             {state.restaurantId && <Button asChild variant="big" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: state.restaurantId }} search={{ ctx: "" }}>Check these dishes</Link></Button>}
             <div className="flex gap-3 rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
               <AlertTriangle aria-hidden className="size-8 shrink-0" />
