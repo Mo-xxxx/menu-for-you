@@ -39,10 +39,11 @@ export function useSpeech() {
 
   const speak = useCallback((text: string) => {
     if (!("speechSynthesis" in window)) return;
+    pushSpoken(text);
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "en-GB";
-    u.rate = 0.95;
+    u.rate = speechRateValue();
     window.speechSynthesis.speak(u);
   }, []);
 
