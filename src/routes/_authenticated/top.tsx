@@ -8,7 +8,7 @@ import { useSpeech } from "@/lib/use-speech";
 import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPrice, reasonText } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/top")({
-  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s.ctx ?? "") }),
+  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
   head: () => ({ meta: [{ title: "Your best 3 — Dining Assistant" }, { name: "description", content: "Your three best safe food options nearby." }] }),
   component: Top,
 });
@@ -42,7 +42,7 @@ function Top() {
                   <dt className="font-bold">Key</dt><dd>{it.key_ingredients.join(", ")}</dd>
                 </dl>
                 <p className="mt-2 text-lg"><strong>Why:</strong> {reasonText(it.reason_code, data!.ctx.weather, data!.ctx.mood)}</p>
-                <p className="mt-1 text-base">Allergen info: {CONFIDENCE_LABEL[it.allergen_confidence].label}</p>
+                <p className="mt-1 text-base">Allergen info: {CONFIDENCE_LABEL[it.allergen_confidence]?.label}</p>
               </button>
               <Button asChild variant="bigOutline" size="tap" className="mt-3 w-full">
                 <Link to="/item/$id" params={{ id: it.item_id }} search={{ ctx }}>More details</Link>

@@ -22,7 +22,9 @@ export const findSafeItems = createServerFn({ method: "POST" })
     const hints = parseRequest(ctx.request_text);
     const { data: rows, error } = await supabase.rpc("find_safe_items", {
       p_lat: data.lat, p_lng: data.lng, p_mood: ctx.mood, p_weather: ctx.weather,
-      p_want_warm: hints.wantWarm ?? undefined, p_want_light: hints.wantLight ?? undefined, p_budget: hints.budget ?? undefined,
+      ...(hints.wantWarm ? { p_want_warm: true } : {}),
+      ...(hints.wantLight ? { p_want_light: true } : {}),
+      ...(hints.budget ? { p_budget: hints.budget } : {}),
     });
     if (error) throw new Error(error.message);
     return { ctx: { mood: ctx.mood, weather: ctx.weather, request_text: ctx.request_text }, items: (rows ?? []) as SafeItem[] };

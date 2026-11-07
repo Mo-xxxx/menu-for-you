@@ -11,7 +11,7 @@ import { useSpeech } from "@/lib/use-speech";
 import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPrice, reasonText } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/item/$id")({
-  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s.ctx ?? "") }),
+  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
   head: () => ({ meta: [{ title: "Dish details — Dining Assistant" }, { name: "description", content: "Full ingredients and allergen information for this dish." }] }),
   component: Item,
 });
@@ -33,7 +33,7 @@ function Item() {
 
   async function record(type: "liked" | "skipped" | "saved") {
     const { error } = await supabase.from("events").insert({ user_id: userId, item_id: id, type, context_id: ctx || null });
-    if (error) return toast.error("Could not save. Please try again.");
+    if (error) { toast.error("Could not save. Please try again."); return; }
     toast.success(type === "liked" ? "Liked. I'll remember this." : type === "saved" ? "Saved for later." : "Skipped. I'll suggest this less.");
     if (type === "skipped") navigate({ to: "/top", search: { ctx } });
   }

@@ -43,7 +43,7 @@ function Setup() {
     change({ ...s, [key]: s[key].includes(v) ? s[key].filter((x) => x !== v) : [...s[key], v] });
 
   function onVoice() {
-    if (speech.listening) return speech.stop();
+    if (speech.listening) { speech.stop(); return; }
     speech.listen((t) => {
       setHeard(t);
       const kind = STEPS[step];
@@ -55,12 +55,9 @@ function Setup() {
   }
 
   async function consent(yes: boolean) {
-    if (!yes) {
-      toast("Nothing has been saved. You need to agree before I can store your food needs.");
-      return;
-    }
+    if (!yes) { toast("Nothing has been saved. You need to agree before I can store your food needs."); return; }
     const { error } = await supabase.from("profiles").upsert({ user_id: userId, consent: true, consent_at: new Date().toISOString() });
-    if (error) return toast.error("Could not save. Please try again.");
+    if (error) { toast.error("Could not save. Please try again."); return; }
     setStep(1);
   }
 
@@ -71,13 +68,13 @@ function Setup() {
       budget_max: s.budget, max_distance_m: s.distance, setup_complete: true, updated_at: new Date().toISOString(),
     });
     setSaving(false);
-    if (error) return toast.error("Could not save. Please try again.");
+    if (error) { toast.error("Could not save. Please try again."); return; }
     await qc.invalidateQueries({ queryKey: ["profile"] });
     navigate({ to: "/request" });
   }
 
   const back = step > 0 ? () => setStep(step - 1) : undefined;
-  const kind = STEPS[step];
+  const kind = STEPS[step] ?? "consent";
   const titles = {
     consent: "Can I store your food needs?",
     diet: "Do you follow a diet?",
@@ -108,7 +105,7 @@ function Setup() {
           {speech.error && <p role="alert" className="text-center text-lg font-bold text-destructive">{speech.error}</p>}
           <Heard text={heard} />
 
-          {kind === "diet" && <ChoiceGrid options={DIET_OPTIONS.map((d) => ({ id: d, label: d[0].toUpperCase() + d.slice(1) }))} selected={s.diet} onToggle={(v) => toggle("diet", v)} />}
+          {kind === "diet" && <ChoiceGrid options={DIET_OPTIONS.map((d) => ({ id: d, label: d.charAt(0).toUpperCase() + d.slice(1) }))} selected={s.diet} onToggle={(v) => toggle("diet", v)} />}
           {kind === "allergies" && <ChoiceGrid options={[...ALLERGY_OPTIONS]} selected={s.allergies} onToggle={(v) => toggle("allergies", v)} />}
           {kind === "budget" && (
             <ChoiceGrid single options={BUDGETS.map((b) => ({ id: String(b), label: `£${b}` }))} selected={[String(s.budget)]} onToggle={(v) => change({ ...s, budget: Number(v) })} />

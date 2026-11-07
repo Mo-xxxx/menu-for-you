@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 /** One decision per screen: title, progress, Back, then content. Layout never shifts. */
 export function Screen({ step, total, title, onBack, children, hideData }: {
-  step: number; total: number; title: string; onBack?: () => void; children: ReactNode; hideData?: boolean;
+  step: number; total: number; title: string; onBack?: (() => void) | undefined; children: ReactNode; hideData?: boolean;
 }) {
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col px-5 pb-10 pt-4">

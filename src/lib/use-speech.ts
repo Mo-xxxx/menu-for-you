@@ -24,7 +24,7 @@ export function useSpeech() {
     const rec = new Ctor();
     rec.lang = "en-GB";
     rec.interimResults = false;
-    rec.onresult = (e) => onText(e.results[0][0].transcript);
+    rec.onresult = (e) => onText(e.results[0]?.[0]?.transcript ?? "");
     rec.onerror = (e) => setError(e.error === "no-speech" ? "I didn't hear anything. Please try again." : "Voice stopped. Please try again or use the buttons.");
     rec.onend = () => setListening(false);
     setError(null);

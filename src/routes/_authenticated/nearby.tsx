@@ -11,7 +11,7 @@ import { formatDistance, formatPrice, walkMinutes } from "@/lib/dining";
 import type { SafeItem } from "@/lib/dining.functions";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
-  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s.ctx ?? "") }),
+  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
   head: () => ({ meta: [{ title: "Places near you — Dining Assistant" }, { name: "description", content: "Map and list of nearby places with food that is safe for you." }] }),
   component: Nearby,
 });

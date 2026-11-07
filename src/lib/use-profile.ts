@@ -20,8 +20,8 @@ export function useProfile() {
   useEffect(() => {
     const p = q.data;
     if (!p) return;
-    document.documentElement.dataset.textSize = p.text_size;
-    document.documentElement.dataset.contrast = p.high_contrast ? "high" : "standard";
+    document.documentElement.dataset['textSize'] = p.text_size;
+    document.documentElement.dataset['contrast'] = p.high_contrast ? "high" : "standard";
   }, [q.data]);
   return q;
 }

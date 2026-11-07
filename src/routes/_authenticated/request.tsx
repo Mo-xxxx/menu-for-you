@@ -38,7 +38,7 @@ function RequestPage() {
       distance_m: profile?.max_distance_m ?? 0,
     }).select("id").single();
     setBusy(false);
-    if (error || !data) return toast.error("Could not start. Please try again.");
+    if (error || !data) { toast.error("Could not start. Please try again."); return; }
     navigate({ to: "/nearby", search: { ctx: data.id } });
   }
 

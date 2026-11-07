@@ -44,7 +44,7 @@ const NUMBER_WORDS: Record<string, number> = {
 };
 function firstNumber(text: string): number | null {
   const m = text.match(/(\d+(?:\.\d+)?)/);
-  if (m) return parseFloat(m[1]);
+  if (m?.[1]) return parseFloat(m[1]);
   for (const w of text.toLowerCase().split(/\s+/)) if (NUMBER_WORDS[w] !== undefined) return NUMBER_WORDS[w];
   return null;
 }
@@ -70,7 +70,7 @@ export function parseRequest(text: string) {
   return {
     wantWarm: /\b(warm|hot|cosy|cozy|soup|comfort)\b/.test(t) ? true : null,
     wantLight: /\b(light|fresh|small|salad)\b/.test(t) ? true : null,
-    budget: budgetMatch ? parseFloat(budgetMatch[1]) : null,
+    budget: budgetMatch?.[1] ? parseFloat(budgetMatch[1]) : null,
   };
 }
 

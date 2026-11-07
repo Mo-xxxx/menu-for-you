@@ -26,9 +26,9 @@ function MyData() {
     queryFn: async () => (await supabase.from("learned_preferences").select("*").order("weight", { ascending: false })).data ?? [],
   });
 
-  async function updateProfile(patch: Record<string, unknown>) {
+  async function updateProfile(patch: { text_size?: string; high_contrast?: boolean; voice_first?: boolean }) {
     const { error } = await supabase.from("profiles").update(patch).eq("user_id", userId);
-    if (error) return toast.error("Could not save.");
+    if (error) { toast.error("Could not save."); return; }
     qc.invalidateQueries({ queryKey: ["profile"] });
   }
   async function adjust(id: string, weight: number) {
