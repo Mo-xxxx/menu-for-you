@@ -13,6 +13,7 @@ import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
 import { formatDistance, formatPrice, walkMinutes } from "@/lib/dining";
 import type { SafeItem } from "@/lib/dining.functions";
+import { FavouriteMenus } from "@/components/FavouriteMenus";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/nearby")({
 
 function Nearby() {
   const { ctx } = Route.useSearch();
+  const { userId } = Route.useRouteContext();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const { data, isLoading, error, loc } = useSafeItems(ctx);
@@ -181,6 +183,7 @@ function Nearby() {
       <div className="sticky bottom-0 mt-auto bg-background pt-3">
         <Button asChild variant="big" size="xl" className="justify-center"><Link to="/top" search={{ ctx }}>Show my best 3</Link></Button>
       </div>
+      <FavouriteMenus userId={userId} ctx={ctx} />
     </Screen>
   );
 }

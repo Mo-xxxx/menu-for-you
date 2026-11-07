@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
 import { deleteMyAccount } from "@/lib/dining.functions";
 import { ALLERGY_OPTIONS, formatDistance } from "@/lib/dining";
+import { FavouriteMenus } from "@/components/FavouriteMenus";
 
 export const Route = createFileRoute("/_authenticated/my-data")({
   head: () => ({ meta: [{ title: "My data — Dining Assistant" }, { name: "description", content: "See, change, download or delete your data." }, { property: "og:title", content: "My data — Dining Assistant" }, { property: "og:description", content: "See, change, download or delete your data." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
@@ -43,10 +44,11 @@ function MyData() {
     toast.success("Learning reset. Your allergies and diet are unchanged.");
   }
   async function exportData() {
-    const [events, contexts, lp] = await Promise.all([
+    const [events, contexts, lp, favourites] = await Promise.all([
       supabase.from("events").select("*"), supabase.from("context_snapshots").select("*"), supabase.from("learned_preferences").select("*"),
+      supabase.from("favourite_menus").select("*"),
     ]);
-    const blob = new Blob([JSON.stringify({ profile: p, events: events.data, contexts: contexts.data, learned_preferences: lp.data }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ profile: p, events: events.data, contexts: contexts.data, learned_preferences: lp.data, favourite_menus: favourites.data }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "dining-assistant-my-data.json"; a.click();
   }
@@ -65,6 +67,7 @@ function MyData() {
     <main className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-5 py-6">
       <Button asChild variant="bigOutline" size="tap" className="self-start"><Link to="/request">← Back to food</Link></Button>
       <h1 className="text-3xl font-bold">My data</h1>
+      <FavouriteMenus userId={userId} />
 
       <section aria-labelledby="needs" className="rounded-2xl border-2 border-foreground bg-card p-4 text-lg">
         <h2 id="needs" className="text-xl font-bold">My food needs</h2>

@@ -7,3 +7,4 @@
 - [ ] Verify Google map rendering — Google rejects the local test origin; requires an authorized origin
 - [x] Add nearby real-menu markers and open full menus from map selections; preserve the request for returning to best 3
 - [x] Match map numbers to menu headings and website/photo transcription messages
+- [ ] Save and remove favourite restaurant menus, retrieve them in Nearby and My data, and include them in data export
