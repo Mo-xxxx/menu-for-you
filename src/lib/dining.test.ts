@@ -39,3 +39,14 @@ describe("menu read-aloud", () => {
   it("gives the full price range, not limited by budget", () =>
     expect(menuOverviewSpeech({ name: "Cafe", total: 3, confirmed: 1, cheapest: 4, dearest: 28 })).toContain("from £4.00 to £28.00"));
 });
+
+import { moodFromWords as mfw } from "./dining";
+describe("spoken mood", () => {
+  it("negative feelings are low", () => { expect(mfw("I'm so tired and stressed")).toBe("low"); expect(mfw("fed up today")).toBe("low"); });
+  it("positive and optimistic feelings are good", () => { expect(mfw("feeling happy")).toBe("good"); expect(mfw("I'm optimistic")).toBe("good"); });
+  it("neutral or food-only is okay", () => { expect(mfw("Something warm and light, under £12")).toBe("okay"); expect(mfw("I'm fine")).toBe("okay"); });
+  it("not good is low", () => expect(mfw("not good at all")).toBe("low"));
+  it("not bad is good", () => expect(mfw("not bad thanks")).toBe("good"));
+  it("mixed feelings are okay", () => expect(mfw("happy but tired")).toBe("okay"));
+  it("cold weather is not a mood", () => expect(mfw("it's cold, want soup")).toBe("okay"));
+});
