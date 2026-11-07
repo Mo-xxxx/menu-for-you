@@ -11,7 +11,7 @@ export function useSafeItems(ctxId: string, restaurantId?: string) {
     enabled: !!loc && !!ctxId,
     queryFn: () => {
       if (!loc) throw new Error("Choose a location first");
-      return fn({ data: { ctxId, lat: loc.actual.lat, lng: loc.actual.lng, restaurantId } });
+      return fn({ data: { ctxId, lat: loc.actual.lat, lng: loc.actual.lng, ...(restaurantId ? { restaurantId } : {}) } });
     },
   });
   return { ...q, loc, locStatus: status, retryLocation: retry };
