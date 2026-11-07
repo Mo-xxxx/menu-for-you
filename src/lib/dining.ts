@@ -134,5 +134,5 @@ export function timeOfDay(d = new Date()) {
 export const CONFIDENCE_LABEL: Record<string, { label: string; desc: string }> = {
   verified: { label: "Verified", desc: "Allergens checked against the restaurant's official list." },
   restaurant_stated: { label: "Restaurant-stated", desc: "The restaurant lists these allergens. Not independently checked." },
-  ai_inferred: { label: "AI-inferred", desc: "Read by AI from a menu. This may be wrong. Never treat it as guaranteed safe." },
+  ai_inferred: { label: "AI-inferred · Unverified", desc: "Read by AI from a menu photo and not checked by anyone. This may be wrong. Never treat it as guaranteed safe." },
 };
