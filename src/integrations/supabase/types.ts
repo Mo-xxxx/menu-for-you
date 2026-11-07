@@ -172,12 +172,15 @@ export type Database = {
           added_by: string | null
           allergen_confidence: string
           audio_summary_text: string
+          confirmed_at: string | null
+          confirmed_by: string | null
           diet_tags: string[]
           id: string
           light: boolean
           name: string
           price: number
           restaurant_id: string
+          review_status: string
           source: string
           summary_text: string
           warm: boolean
@@ -186,12 +189,15 @@ export type Database = {
           added_by?: string | null
           allergen_confidence?: string
           audio_summary_text?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           diet_tags?: string[]
           id?: string
           light?: boolean
           name: string
           price: number
           restaurant_id: string
+          review_status?: string
           source?: string
           summary_text?: string
           warm?: boolean
@@ -200,12 +206,15 @@ export type Database = {
           added_by?: string | null
           allergen_confidence?: string
           audio_summary_text?: string
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           diet_tags?: string[]
           id?: string
           light?: boolean
           name?: string
           price?: number
           restaurant_id?: string
+          review_status?: string
           source?: string
           summary_text?: string
           warm?: boolean
@@ -272,11 +281,14 @@ export type Database = {
           id: string
           lat: number
           lng: number
+          menu_dated: string | null
+          menu_source_url: string | null
           menu_updated_at: string
           name: string
           opening_hours: string
           price_band: number
           source: string
+          website: string | null
         }
         Insert: {
           cuisine?: string
@@ -284,11 +296,14 @@ export type Database = {
           id?: string
           lat: number
           lng: number
+          menu_dated?: string | null
+          menu_source_url?: string | null
           menu_updated_at?: string
           name: string
           opening_hours?: string
           price_band?: number
           source?: string
+          website?: string | null
         }
         Update: {
           cuisine?: string
@@ -296,11 +311,14 @@ export type Database = {
           id?: string
           lat?: number
           lng?: number
+          menu_dated?: string | null
+          menu_source_url?: string | null
           menu_updated_at?: string
           name?: string
           opening_hours?: string
           price_band?: number
           source?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -334,6 +352,10 @@ export type Database = {
           score: number
           summary_text: string
         }[]
+      }
+      review_menu_item: {
+        Args: { p_item: string; p_ok: boolean }
+        Returns: undefined
       }
     }
     Enums: {
