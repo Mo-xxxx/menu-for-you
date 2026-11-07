@@ -11,8 +11,9 @@ export type SafeItem = {
 /** Hard filters (allergies, diet, budget, distance) run inside the database function before ranking. */
 export const findSafeItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { ctxId: string; lat: number; lng: number }) => {
+  .inputValidator((d: { ctxId: string; lat: number; lng: number; restaurantId?: string }) => {
     if (typeof d.ctxId !== "string" || !Number.isFinite(d.lat) || !Number.isFinite(d.lng)) throw new Error("Bad input");
+    if (d.restaurantId !== undefined && !/^[0-9a-f-]{36}$/i.test(d.restaurantId)) throw new Error("Bad restaurant");
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -27,7 +28,8 @@ export const findSafeItems = createServerFn({ method: "POST" })
       ...(hints.budget ? { p_budget: hints.budget } : {}),
     });
     if (error) throw new Error(error.message);
-    return { ctx: { mood: ctx.mood, weather: ctx.weather, request_text: ctx.request_text }, items: (rows ?? []) as SafeItem[] };
+    const eligible = (rows ?? []) as SafeItem[];
+    return { ctx: { mood: ctx.mood, weather: ctx.weather, request_text: ctx.request_text }, items: data.restaurantId ? eligible.filter(item => item.restaurant_id === data.restaurantId) : eligible };
   });
 
 /** Deletes every stored row for the caller, then the account itself. */

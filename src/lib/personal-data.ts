@@ -14,14 +14,15 @@ async function allPages<T>(fetchPage: (from: number, to: number) => PromiseLike<
 }
 
 export async function loadPersonalData(userId: string): Promise<PersonalData> {
-  const [profile, events, contexts, preferences, favourites] = await Promise.all([
+  const [profile, events, contexts, preferences, favourites, choices] = await Promise.all([
     supabase.from("profiles").select("*").eq("user_id", userId).single(),
     allPages((from, to) => supabase.from("events").select("*").eq("user_id", userId).order("id").range(from, to)),
     allPages((from, to) => supabase.from("context_snapshots").select("*").eq("user_id", userId).order("id").range(from, to)),
     allPages((from, to) => supabase.from("learned_preferences").select("*").eq("user_id", userId).order("id").range(from, to)),
     allPages((from, to) => supabase.from("favourite_menus").select("*,restaurants(name)").eq("user_id", userId).order("restaurant_id").range(from, to)),
+    allPages((from, to) => supabase.from("restaurant_choices").select("*,restaurants(name)").eq("user_id", userId).order("id").range(from, to)),
   ]);
   if (profile.error) throw profile.error;
   if (!profile.data) throw new Error("Your profile could not be loaded.");
-  return { profile: profile.data, events, contexts, learned_preferences: preferences, favourite_menus: favourites };
+  return { profile: profile.data, events, contexts, learned_preferences: preferences, favourite_menus: favourites, restaurant_choices: choices };
 }
