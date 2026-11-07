@@ -39,5 +39,5 @@ export function useLocation() {
     );
   }, [tick]);
   const retry = useCallback(() => setTick((t) => t + 1), []);
-  return Object.assign(loc ?? {}, { __loc: loc }) && { loc, status, retry };
+  return { loc, status, retry };
 }

@@ -17,8 +17,8 @@ export function LocationPicker({ onRetry, current }: { onRetry?: () => void; cur
     setBusy(true); setMsg(null);
     try {
       const r = await geo({ data: { query: q } });
-      if (!r) { setMsg(`I couldn't find "${q}". Try a postcode or another place.`); speech.speak?.(`I couldn't find ${q}.`); return; }
-      setManualLocation(r); speech.speak?.(`Searching near ${r.label}.`);
+      if (!r) { setMsg(`I couldn't find "${q}". Try a postcode or another place.`); speech.speak(`I couldn't find ${q}.`); return; }
+      setManualLocation(r); speech.speak(`Searching near ${r.label}.`);
     } catch { setMsg("Place search isn't working right now. Please try again."); }
     finally { setBusy(false); }
   };
@@ -30,7 +30,7 @@ export function LocationPicker({ onRetry, current }: { onRetry?: () => void; cur
         <label htmlFor="loc-q" className="block text-lg font-semibold">Postcode or place</label>
         <input id="loc-q" value={text} onChange={(e) => setText(e.target.value)} className="h-14 w-full rounded-md border-2 border-input bg-background px-4 text-xl" placeholder="e.g. W1D 3QU or Soho" />
         <div className="grid gap-3 sm:grid-cols-2">
-          {speech.supported && <Button type="button" size="lg" variant="outline" className="h-14 text-lg" onClick={() => speech.listen?.((said: string) => { setText(said); void find(said); })}>Say a place</Button>}
+          {speech.supported && <Button type="button" size="lg" variant="outline" className="h-14 text-lg" onClick={() => speech.listen((said: string) => { setText(said); void find(said); })}>Say a place</Button>}
           <Button type="submit" size="lg" className="h-14 text-lg" disabled={busy}>{busy ? "Finding…" : "Search here"}</Button>
         </div>
       </form>

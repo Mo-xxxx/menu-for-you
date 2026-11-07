@@ -14,6 +14,7 @@ import { useProfile } from "@/lib/use-profile";
 import { formatDistance, formatPrice, walkMinutes } from "@/lib/dining";
 import { rankedRestaurants, moodLabel } from "@/lib/restaurant-ranking";
 import { FavouriteMenus } from "@/components/FavouriteMenus";
+import { LocationPicker } from "@/components/LocationPicker";
 
 export const Route = createFileRoute("/_authenticated/nearby")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
@@ -26,7 +27,7 @@ function Nearby() {
   const { userId } = Route.useRouteContext();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data, isLoading, error, loc } = useSafeItems(ctx);
+  const { data, isLoading, error, loc, locStatus, retryLocation } = useSafeItems(ctx);
   const [selected, setSelected] = useState<string | null>(null);
   const menus = useQuery({
     queryKey: ["menus-on-file"],
