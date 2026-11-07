@@ -50,8 +50,11 @@ Return JSON.\n\n${text}` }], schema);
     const parsed = ai.json as { has_menu: boolean; menu_year: number | null; menu_month: number | null; dishes: ExtractedDish[] };
     if (!parsed.has_menu || parsed.dishes.length === 0) return { ok: false as const, error: "I couldn't find a menu with prices on this website, so I left it as not checked." };
     const date = { year: parsed.menu_year, month: parsed.menu_month };
-    if (!isMenuCurrent(date)) return { ok: false as const, error: date.year ? `The website menu is from ${menuDateLabel(date)}, which is too old. I left it as not checked.` : "The website menu has no date, so I can't tell if it's current. I left it as not checked." };
+    // Undated menus the restaurant currently publishes are kept, dated by when they were read.
+    if (date.year && !isMenuCurrent(date)) return { ok: false as const, error: `The website menu is from ${menuDateLabel(date)}, which is too old. I left it as not checked.` };
+    const now = new Date();
+    const label = date.year ? menuDateLabel(date) : `no date shown, read ${menuDateLabel({ year: now.getFullYear(), month: now.getMonth() + 1 })}`;
     const menuPage = pages.length > 1 ? pages[1]!.url : home.href;
-    const r = await saveDishes({ place, dishes: parsed.dishes, source: "website", userId, menuDated: `Website menu, ${menuDateLabel(date)}`, sourceUrl: menuPage });
+    const r = await saveDishes({ place, dishes: parsed.dishes, source: "website", userId, menuDated: `Website menu, ${label}`, sourceUrl: menuPage });
     return { ok: true as const, restaurantId: r.restaurantId, saved: r.saved };
 }
