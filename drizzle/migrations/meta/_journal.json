@@ -43,6 +43,13 @@
       "when": 1794067528684,
       "tag": "0005_favourite_menus",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794069888711,
+      "tag": "0006_restaurant_choice_records_and_favourite_ranking",
+      "breakpoints": true
     }
   ]
 }

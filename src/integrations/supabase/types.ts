@@ -310,6 +310,52 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurant_choices: {
+        Row: {
+          context_id: string | null
+          created_at: string
+          id: string
+          restaurant_id: string
+          user_id: string
+        }
+        Insert: {
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          restaurant_id: string
+          user_id: string
+        }
+        Update: {
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          restaurant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_choices_context_id_fkey"
+            columns: ["context_id"]
+            isOneToOne: false
+            referencedRelation: "context_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_choices_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_choices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       restaurants: {
         Row: {
           cuisine: string
