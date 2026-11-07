@@ -38,3 +38,4 @@ use the editor.
 
 - Menu browsing is separate from recommendations: preserve the request context through uploads and reviews, and invalidate menu/status/recommendation queries after changes so the journey stays current without bypassing database safety checks.
 - Include stored real-menu restaurants within the map radius independently of Places search results; their markers open full menus, while recommendation eligibility remains exclusively in the database.
+- Carry the selected map marker through menu links as display-only search data so menu headings and transcription status identify the same restaurant without changing eligibility.

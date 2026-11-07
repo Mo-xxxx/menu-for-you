@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, menuDishSpeech, menuOverviewSpeech } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/restaurant/$id")({
-  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
+  validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? ""), marker: /^\d+$/.test(String(s["marker"] ?? "")) ? String(s["marker"]) : undefined }),
   head: () => ({ meta: [
     { title: "Restaurant menu — Dining Assistant" },
     { name: "description", content: "Full menu for this restaurant, with dishes a person has checked." },
@@ -27,7 +27,7 @@ type Dish = { id: string; name: string; price: number; summary_text: string; die
 
 function MenuPage() {
   const { id } = Route.useParams();
-  const { ctx } = Route.useSearch();
+  const { ctx, marker } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { speak } = useSpeech();
@@ -68,10 +68,10 @@ function MenuPage() {
   const ingsOf = (d: Dish) => d.menu_item_ingredients.map((x) => x.ingredients?.name).filter((n): n is string => !!n);
   const dishText = (d: Dish) => menuDishSpeech({ name: d.name, price: Number(d.price), diet_tags: d.diet_tags, ingredients: ingsOf(d), status: isSample ? "sample" : d.review_status === "confirmed" ? "confirmed" : "pending" });
   const prices = live.map((d) => Number(d.price));
-  const overview = r ? menuOverviewSpeech({ name: r.name, total: live.length, confirmed, cheapest: prices.length ? Math.min(...prices) : null, dearest: prices.length ? Math.max(...prices) : null }) : "";
+  const overview = r ? (marker ? `Map number ${marker}. ` : "") + menuOverviewSpeech({ name: r.name, total: live.length, confirmed, cheapest: prices.length ? Math.min(...prices) : null, dearest: prices.length ? Math.max(...prices) : null }) : "";
 
   return (
-    <Screen step={2} total={4} title={r?.name ?? "Menu"} onBack={() => navigate({ to: "/nearby", search: { ctx } })}>
+    <Screen step={2} total={4} title={r ? `${marker ? `${marker}. ` : ""}${r.name}` : "Menu"} onBack={() => navigate({ to: "/nearby", search: { ctx } })}>
       {q.isLoading ? <p role="status" className="text-xl">Loading the menu…</p> : q.error ? <><p role="alert" className="text-xl">The menu couldn't load. Please try again.</p><Button variant="big" size="xl" onClick={() => void q.refetch()}>Try again</Button></> : !r ? <p role="alert" className="text-xl">I couldn't find this restaurant.</p> : (
         <>
           <p className="text-lg">{r.cuisine}{r.menu_dated ? ` · ${r.menu_dated}` : ""}</p>
