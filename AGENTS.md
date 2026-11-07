@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Safe-food filtering and ranking live in the `find_safe_items` Postgres function, called only via the `findSafeItems` server function; the UI never filters for safety itself.
+- Learned preferences are updated by a trigger on `events`; rows with `user_override` are not changed by learning.
+- Speech parsing and summary formatting live in `src/lib/dining.ts` (browser-safe, unit-tested).
