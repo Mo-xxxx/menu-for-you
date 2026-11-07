@@ -58,6 +58,20 @@ function Nearby() {
     return [...a, ...others.map((p, i) => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, label: String(start + i + 1) }))];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groups, coords, live.data, loc?.real]);
+  const menuStatus = useQuery({
+    queryKey: ["place-menu-status", others.map((p) => p.id).join(",")],
+    enabled: others.length > 0,
+    queryFn: async () => {
+      const { data: rs } = await supabase.from("restaurants").select("id, google_place_id, menu_items(review_status)").in("google_place_id", others.map((p) => p.id));
+      const m = new Map<string, { total: number; confirmed: number }>();
+      for (const r of rs ?? []) {
+        const items = (r.menu_items ?? []).filter((i) => i.review_status !== "rejected");
+        if (r.google_place_id && items.length) m.set(r.google_place_id, { total: items.length, confirmed: items.filter((i) => i.review_status === "confirmed").length });
+      }
+      return m;
+    },
+  });
+  const statusText = (id: string) => { const st = menuStatus.data?.get(id); return st ? `Menu on file · ${st.confirmed} of ${st.total} dishes checked` : "No menu found yet"; };
   const onSelect = useCallback((id: string) => setSelected(id), []);
   const sel = groups.find((g) => g.id === selected);
   const selOther = selected && !sel ? live.data?.places.find((p) => p.id === selected) : undefined;
@@ -72,7 +86,7 @@ function Nearby() {
           <>
             <p className="text-lg">{selOther.type}{selOther.openNow === null ? "" : selOther.openNow ? " · Open now" : " · Closed now"}</p>
             <p className="rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
-              <strong>Menu not checked yet.</strong> I don't have this place's menu, so I can't tell you which dishes are safe for you. Please ask the restaurant, find the menu on their website, or add a menu photo below. A person must confirm the dishes before I suggest them.
+              <strong>{menuStatus.data?.has(selOther.id) ? "Menu waiting for a person to check." : "No menu found yet."}</strong> Until a person confirms the dishes, I can't tell you which are safe for you. Please ask the restaurant, find the menu on their website, or add a menu photo below. A person must confirm the dishes before I suggest them.
             </p>
             <PlaceMenuActions placeId={selOther.id} ctx={ctx} />
             <MenuPhotoUpload placeId={selOther.id} placeName={selOther.name} />
@@ -112,13 +126,13 @@ function Nearby() {
             {others.length > 0 && (
               <>
                 <h2 className="text-2xl font-bold">Other places nearby</h2>
-                <p className="text-lg">Menus not checked yet — I can't confirm these are safe.</p>
+                <p className="text-lg">Their dishes haven't been confirmed by a person yet, so I can't say they're safe.</p>
                 <ol start={groups.length + 1} className="flex flex-col gap-3">
                   {others.map((p, i) => (
                     <li key={p.id}>
                       <button onClick={() => setSelected(p.id)} className="flex w-full items-center gap-4 rounded-2xl border-2 border-dashed border-foreground bg-card p-4 text-left text-lg hover:bg-secondary">
                         <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-card font-bold">{groups.length + i + 1}</span>
-                        <span><span className="block text-xl font-bold">{p.name}</span>{p.type}{p.openNow === null ? "" : p.openNow ? " · Open now" : " · Closed now"} · Menu not checked</span>
+                        <span><span className="block text-xl font-bold">{p.name}</span>{p.type}{p.openNow === null ? "" : p.openNow ? " · Open now" : " · Closed now"} · {statusText(p.id)}</span>
                       </button>
                     </li>
                   ))}
