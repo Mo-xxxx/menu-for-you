@@ -41,7 +41,7 @@ export const importMenuFromWebsite = createServerFn({ method: "POST" })
     // Follow up to two same-site links that look like menus.
     const links = [...homeHtml.matchAll(/<a[^>]+href=["']([^"'#]+)["'][^>]*>([\s\S]*?)<\/a>/gi)]
       .filter((m) => /menu|food|eat|dishes/i.test(`${m[1]} ${m[2]}`))
-      .map((m) => safeUrl(m[1]!, home)).filter((u): u is URL => !!u && u.hostname === home.hostname && !/\.pdf$/i.test(u.pathname));
+      .map((m) => safeUrl(m[1]!, home.href)).filter((u): u is URL => !!u && u.hostname === home.hostname && !/\.pdf$/i.test(u.pathname));
     const pages = [{ url: home.href, text: htmlToText(homeHtml) }];
     for (const u of [...new Map(links.map((l) => [l.href, l])).values()].slice(0, 2)) {
       const h = await getPage(u);
