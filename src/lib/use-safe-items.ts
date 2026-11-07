@@ -7,9 +7,9 @@ export function useSafeItems(ctxId: string) {
   const loc = useLocation();
   const fn = useServerFn(findSafeItems);
   const q = useQuery({
-    queryKey: ["safe", ctxId, loc?.lat, loc?.lng],
+    queryKey: ["safe", ctxId, loc?.actual.lat, loc?.actual.lng],
     enabled: !!loc && !!ctxId,
-    queryFn: () => fn({ data: { ctxId, lat: loc!.lat, lng: loc!.lng } }),
+    queryFn: () => fn({ data: { ctxId, lat: loc!.actual.lat, lng: loc!.actual.lng } }),
   });
   return { ...q, loc };
 }
