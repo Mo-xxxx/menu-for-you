@@ -32,6 +32,10 @@ export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: strin
       setState({ status: "done", message: `I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.` });
       speak(`I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.`);
       qc.invalidateQueries({ queryKey: ["place-menu", placeId] });
+      qc.invalidateQueries({ queryKey: ["place-menu-status"] });
+      qc.invalidateQueries({ queryKey: ["menus-on-file"] });
+      qc.invalidateQueries({ queryKey: ["menu-page"] });
+      qc.invalidateQueries({ queryKey: ["safe"] });
     } catch {
       setState({ status: "error", message: "Something went wrong. Please try again." });
     }

@@ -2,3 +2,4 @@
 - [x] Read-aloud for menu page, reviews and summaries; show all prices (budget open)
 - [x] Storage: already on with the backend
 - [x] Replace sample restaurants with real website menus
+- [ ] Verify the signed-in mood, nearby, menu, and suggestions journey; repair dead ends without weakening safety checks

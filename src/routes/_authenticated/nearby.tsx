@@ -26,6 +26,14 @@ function Nearby() {
   const { data: profile } = useProfile();
   const { data, isLoading, error, loc } = useSafeItems(ctx);
   const [selected, setSelected] = useState<string | null>(null);
+  const menus = useQuery({
+    queryKey: ["menus-on-file"],
+    queryFn: async () => {
+      const { data: rows, error } = await supabase.from("restaurants").select("id,name,menu_items(review_status)").neq("source", "sample").order("name");
+      if (error) throw error;
+      return (rows ?? []).filter((r) => r.menu_items.some((item) => item.review_status === "pending" || item.review_status === "confirmed"));
+    },
+  });
 
   const groups = useMemo(() => {
     const m = new Map<string, { id: string; name: string; cuisine: string; distance: number; items: SafeItem[] }>();
@@ -89,7 +97,7 @@ function Nearby() {
               <strong>{menuStatus.data?.has(selOther.id) ? "Menu waiting for a person to check." : "No menu found yet."}</strong> Until a person confirms the dishes, I can't tell you which are safe for you. Please ask the restaurant, find the menu on their website, or add a menu photo below. A person must confirm the dishes before I suggest them.
             </p>
             <PlaceMenuActions placeId={selOther.id} ctx={ctx} />
-            <MenuPhotoUpload placeId={selOther.id} placeName={selOther.name} />
+            <MenuPhotoUpload placeId={selOther.id} placeName={selOther.name} ctx={ctx} />
           </>
         ) : sel ? (
           <>
@@ -113,6 +121,12 @@ function Nearby() {
             {live.data?.error && <p role="status" className="text-lg">{live.data.error}</p>}
             <h2 className="text-2xl font-bold">Safe dishes for you</h2>
             {groups.length === 0 && <p className="text-lg">No checked menus match your needs nearby.</p>}
+            {(menus.data?.length ?? 0) > 0 && <>
+              <h2 className="text-2xl font-bold">Restaurant menus on file</h2>
+              <p className="text-lg">These are menus to review, not food suggestions. Only person-checked dishes within your distance, budget, diet and allergy settings can reach your best 3.</p>
+              <ul className="flex flex-col gap-3">{menus.data?.map((r) => <li key={r.id}><Button asChild variant="bigOutline" size="xl"><Link to="/restaurant/$id" params={{ id: r.id }} search={{ ctx }}>Open {r.name} menu</Link></Button></li>)}</ul>
+            </>}
+            {menus.error && <p role="alert" className="text-lg">Saved menus couldn't load. Please try again.</p>}
             <ol className="flex flex-col gap-3">
               {groups.map((g, i) => (
                 <li key={g.id}>

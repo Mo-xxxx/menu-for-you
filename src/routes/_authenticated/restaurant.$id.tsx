@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertTriangle, Check, CheckCircle2, Clock, X, Undo2, Volume2 } from "lucide-react";
@@ -38,6 +38,8 @@ function MenuPage() {
         supabase.from("restaurants").select("id,name,cuisine,source,menu_dated,menu_source_url,website").eq("id", id).maybeSingle(),
         supabase.from("menu_items").select("id,name,price,summary_text,diet_tags,source,review_status,menu_item_ingredients(is_key,ingredients(name,allergen_group))").eq("restaurant_id", id).order("name"),
       ]);
+      if (r.error) throw r.error;
+      if (m.error) throw m.error;
       return { r: r.data, dishes: (m.data ?? []) as Dish[] };
     },
   });
@@ -49,11 +51,14 @@ function MenuPage() {
     toast.success(ok ? `${name} confirmed.` : `${name} removed.`, { action: { label: "Undo", onClick: () => void review(itemId, !ok, name) } });
     qc.invalidateQueries({ queryKey: ["menu-page", id] });
     qc.invalidateQueries({ queryKey: ["safe"] });
+    qc.invalidateQueries({ queryKey: ["place-menu"] });
+    qc.invalidateQueries({ queryKey: ["place-menu-status"] });
+    qc.invalidateQueries({ queryKey: ["menus-on-file"] });
   }
 
   const r = q.data?.r;
   const dishes = q.data?.dishes ?? [];
-  const live = dishes.filter((d) => d.review_status !== "rejected");
+  const live = dishes.filter((d) => d.review_status !== "rejected" && d.review_status !== "retired");
   const removed = dishes.filter((d) => d.review_status === "rejected");
   const confirmed = live.filter((d) => d.review_status === "confirmed").length;
   const pending = live.length - confirmed;
@@ -65,7 +70,7 @@ function MenuPage() {
 
   return (
     <Screen step={2} total={4} title={r?.name ?? "Menu"} onBack={() => navigate({ to: "/nearby", search: { ctx } })}>
-      {q.isLoading ? <p role="status" className="text-xl">Loading the menu…</p> : !r ? <p role="alert" className="text-xl">I couldn't find this restaurant.</p> : (
+      {q.isLoading ? <p role="status" className="text-xl">Loading the menu…</p> : q.error ? <><p role="alert" className="text-xl">The menu couldn't load. Please try again.</p><Button variant="big" size="xl" onClick={() => void q.refetch()}>Try again</Button></> : !r ? <p role="alert" className="text-xl">I couldn't find this restaurant.</p> : (
         <>
           <p className="text-lg">{r.cuisine}{r.menu_dated ? ` · ${r.menu_dated}` : ""}</p>
           {r.menu_source_url && <p className="text-lg">From: <a className="underline" href={r.menu_source_url} target="_blank" rel="noreferrer">the restaurant's website</a></p>}
@@ -80,6 +85,7 @@ function MenuPage() {
             <Button variant="bigOutline" size="tap" disabled={live.length === 0} onClick={() => speak([overview, ...live.map(dishText)].join(" "))}><Volume2 aria-hidden /> Read whole menu</Button>
           </div>
           <p className="text-lg">All dishes and prices are shown here, whatever your budget.</p>
+          <Button asChild variant="big" size="xl"><Link to={ctx ? "/top" : "/request"} search={ctx ? { ctx } : {}}> {ctx ? "Check my best 3" : "Start a food request"}</Link></Button>
           {!isSample && (
             <p className="flex gap-3 rounded-xl border-2 border-foreground bg-card p-4 text-lg">
               <AlertTriangle aria-hidden className="size-8 shrink-0" />

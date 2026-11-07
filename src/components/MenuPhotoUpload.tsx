@@ -14,11 +14,13 @@ async function toJpegDataUrl(file: File, max = 1600): Promise<string> {
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(img.width * scale);
   canvas.height = Math.round(img.height * scale);
-  canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Could not open this photo.");
+  context.drawImage(img, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; placeName: string }) {
+export function MenuPhotoUpload({ placeId, placeName, ctx }: { placeId: string; placeName: string; ctx: string }) {
   const input = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
   const { speak } = useSpeech();
@@ -47,6 +49,8 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
       if (!r.ok) { setState({ status: "error", message: r.error }); return; }
       setState({ status: "done", dishes: r.dishes, saved: r.saved, restaurantId: r.restaurantId });
       qc.invalidateQueries({ queryKey: ["place-menu"] });
+      qc.invalidateQueries({ queryKey: ["place-menu-status"] });
+      qc.invalidateQueries({ queryKey: ["menus-on-file"] });
       setPhotos([]);
       qc.invalidateQueries({ queryKey: ["safe"] });
     } catch (e) {
@@ -89,7 +93,7 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
           <div className="flex flex-col gap-3">
             <p className="text-lg font-bold">I read {state.dishes?.length} dishes and saved {state.saved} with prices. They now wait for a person to confirm them.</p>
             <Button variant="bigOutline" size="xl" className="justify-center" onClick={() => speak([`I read ${state.dishes?.length} dishes. These are AI-inferred and not guaranteed safe.`, ...(state.dishes ?? []).map((d) => menuDishSpeech({ name: d.name, price: d.price, diet_tags: d.diet_tags, ingredients: d.ingredients.map((i) => i.name), status: "pending" }))].join(" "))}><Volume2 aria-hidden /> Listen to what I found</Button>
-            {state.restaurantId && <Button asChild variant="big" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: state.restaurantId }} search={{ ctx: "" }}>Check these dishes</Link></Button>}
+            {state.restaurantId && <Button asChild variant="big" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: state.restaurantId }} search={{ ctx }}>Check these dishes</Link></Button>}
             <div className="flex gap-3 rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
               <AlertTriangle aria-hidden className="size-8 shrink-0" />
               <p><strong>AI-inferred and unverified — not guaranteed safe.</strong> AI can misread menus and miss allergens. Always confirm allergens with the restaurant.</p>
@@ -108,7 +112,7 @@ export function MenuPhotoUpload({ placeId, placeName }: { placeId: string; place
                 </li>
               ))}
             </ul>
-            <p className="text-lg">Dishes that fit your needs now appear in your list and best 3, marked AI-inferred.</p>
+            <p className="text-lg">Only after a person checks a dish can it be considered for your best 3. Your allergies, diet, budget and distance still apply.</p>
           </div>
         )}
       </div>
