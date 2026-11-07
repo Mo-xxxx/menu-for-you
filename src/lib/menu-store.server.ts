@@ -17,7 +17,7 @@ export async function placeDetails(placeId: string): Promise<PlaceInfo> {
 }
 
 /** Stores AI-read dishes as ai_inferred + pending human review. Replaces earlier dishes from the same source. */
-export async function saveDishes(opts: { place: PlaceInfo; dishes: ExtractedDish[]; source: "menu_photo" | "website"; userId: string; menuDated: string; sourceUrl: string | null }) {
+export async function saveDishes(opts: { place: PlaceInfo; dishes: ExtractedDish[]; source: "menu_photo" | "website"; userId: string | null; menuDated: string; sourceUrl: string | null }) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { place } = opts;
   const { data: rest, error: rErr } = await supabaseAdmin.from("restaurants")
