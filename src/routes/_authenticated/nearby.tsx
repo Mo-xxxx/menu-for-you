@@ -103,7 +103,7 @@ function Nearby() {
   return (
     <Screen step={2} total={4} title={sel || selOther ? `${selectedMarker ? `${selectedMarker}. ` : ""}${sel?.name ?? selOther?.name}` : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
       {data && <p role="status" className="text-lg"><strong>Your mood:</strong> {moodLabel(data.ctx.mood)}</p>}
-      {(locStatus === "denied" || locStatus === "manual") && <LocationPicker onRetry={retryLocation} current={locStatus === "manual" ? loc?.label : null} />}
+      {(locStatus === "denied" || locStatus === "manual") && <LocationPicker onRetry={retryLocation} current={locStatus === "manual" ? (loc?.label ?? null) : null} />}
       <p role="status" aria-live="polite" className="min-h-8 text-lg">{loc && (live.isFetching || menus.isFetching) ? "Updating nearby places…" : ""}</p>
       {locStatus === "denied" ? null : isLoading || !loc ? <p role="status" className="text-xl">{locStatus === "asking" ? "Asking for your location…" : "Finding safe food near you…"}</p>
         : error ? <p role="alert" className="text-xl text-destructive">Something went wrong. Please go back and try again.</p>
