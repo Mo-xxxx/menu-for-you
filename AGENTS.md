@@ -37,3 +37,4 @@ use the editor.
 - Menus are read by AI from photos (`menu-photo.functions.ts`) or the place's website (`menu-website.functions.ts`), saved via `menu-store.server.ts` as ai_inferred + review_status pending; only person-confirmed dishes reach `find_safe_items`. AI "possible allergens" become "may contain" ingredient rows.
 
 - Menu browsing is separate from recommendations: preserve the request context through uploads and reviews, and invalidate menu/status/recommendation queries after changes so the journey stays current without bypassing database safety checks.
+- Include stored real-menu restaurants within the map radius independently of Places search results; their markers open full menus, while recommendation eligibility remains exclusively in the database.
