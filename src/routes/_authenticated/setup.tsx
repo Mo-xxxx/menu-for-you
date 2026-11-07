@@ -137,13 +137,13 @@ function Setup() {
   );
 }
 
-function ChoiceGrid({ options, selected, onToggle, single }: { options: { id: string; label: string }[]; selected: string[]; onToggle: (id: string) => void; single?: boolean }) {
+function ChoiceGrid({ options, selected, onToggle }: { options: { id: string; label: string }[]; selected: string[]; onToggle: (id: string) => void; single?: boolean }) {
   return (
     <div role="group" className="grid grid-cols-2 gap-3">
       {options.map((o) => {
         const on = selected.includes(o.id);
         return (
-          <Button key={o.id} variant="choice" size="tap" aria-pressed={on} onClick={() => onToggle(o.id)} className="justify-start" role={single ? "radio" : undefined} aria-checked={single ? on : undefined}>
+          <Button key={o.id} variant="choice" size="tap" aria-pressed={on} onClick={() => onToggle(o.id)} className="justify-start">
             <span aria-hidden className="inline-flex size-6 items-center justify-center rounded border-2 border-current">{on ? "✓" : ""}</span>
             {o.label}
           </Button>

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedSetupRouteImport } from './routes/_authenticated/setup'
 import { Route as AuthenticatedStartRouteImport } from './routes/_authenticated/start'
 
 const IndexRoute = IndexRouteImport.update({
@@ -28,6 +29,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSetupRoute = AuthenticatedSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStartRoute = AuthenticatedStartRouteImport.update({
   id: '/start',
   path: '/start',
@@ -37,11 +43,13 @@ const AuthenticatedStartRoute = AuthenticatedStartRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/setup': typeof AuthenticatedSetupRoute
   '/start': typeof AuthenticatedStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/setup': typeof AuthenticatedSetupRoute
   '/start': typeof AuthenticatedStartRoute
 }
 export interface FileRoutesById {
@@ -49,14 +57,21 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/setup': typeof AuthenticatedSetupRoute
   '/_authenticated/start': typeof AuthenticatedStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/start'
+  fullPaths: '/' | '/auth' | '/setup' | '/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/start'
-  id: '__root__' | '/' | '/_authenticated' | '/auth' | '/_authenticated/start'
+  to: '/' | '/auth' | '/setup' | '/start'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/setup'
+    | '/_authenticated/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +103,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/setup': {
+      id: '/_authenticated/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof AuthenticatedSetupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/start': {
       id: '/_authenticated/start'
       path: '/start'
@@ -99,10 +121,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedSetupRoute: typeof AuthenticatedSetupRoute
   AuthenticatedStartRoute: typeof AuthenticatedStartRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedSetupRoute: AuthenticatedSetupRoute,
   AuthenticatedStartRoute: AuthenticatedStartRoute,
 }
 
