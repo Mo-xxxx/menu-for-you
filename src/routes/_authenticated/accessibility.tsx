@@ -56,6 +56,9 @@ function statusLine(s: ToolkitStatus | null): string {
 function AccessibilityPage() {
   const a = useAccessibility();
   const { speak } = useSpeech();
+  const { userId } = Route.useRouteContext();
+  const qc = useQueryClient();
+  const { data: profile } = useProfile();
   const [token, setToken] = useState(savedToken);
   const [status, setStatus] = useState<ToolkitStatus | null>(null);
   const [busy, setBusy] = useState(false);
@@ -92,6 +95,22 @@ function AccessibilityPage() {
     setBusy(false);
     toast.success("Disconnected from the toolkit.");
     say("Disconnected from the toolkit.");
+  }
+
+  async function saveToAccount() {
+    const base = outputsOf(profile).filter((o) => o !== "pictures");
+    const outputs = a.pictureSummaries ? [...base, "pictures"] : base;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ text_size: a.textSize, high_contrast: a.highContrast, summary_outputs: outputs })
+      .eq("user_id", userId);
+    if (error) {
+      toast.error("Could not save to your account.");
+      return;
+    }
+    qc.invalidateQueries({ queryKey: ["profile"] });
+    toast.success("Saved to your account, so it follows you to another device.");
+    say("Saved to your account.");
   }
 
   const toggleRow = (key: "highContrast" | "largeTargets" | "reduceMotion" | "autoRead" | "captions" | "pictureSummaries", label: string, note: string) => (
@@ -174,6 +193,9 @@ function AccessibilityPage() {
         </div>
         <Button variant="bigOutline" size="tap" className="mt-3 w-full" onClick={() => { resetSettings(); say("Back to the default settings."); }}>
           Back to defaults
+        </Button>
+        <Button variant="big" size="tap" className="mt-2 w-full" onClick={saveToAccount}>
+          <Save aria-hidden /> Save these settings to my account
         </Button>
       </section>
 
