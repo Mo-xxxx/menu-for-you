@@ -64,7 +64,7 @@ function RequestPage() {
         </>
       ) : (
         <>
-          <MicButton listening={speech.listening} onClick={() => speech.listening ? speech.stop() : speech.listen((t: string) => { setHeard(t); speech.speak?.(`I heard you're feeling ${moodFromWords(t)}.`); })} label="Tap to speak" />
+          <MicButton listening={speech.listening} onClick={() => speech.listening ? speech.stop() : speech.listen((t: string) => { setHeard(t); speech.speak(`I heard you're feeling ${moodFromWords(t)}.`); })} label="Tap to speak" />
           <p className="text-center text-lg">For example: “Something warm and light, under £12”</p>
           {speech.error && <p role="alert" className="text-center text-lg font-bold text-destructive">{speech.error}</p>}
           <Heard text={heard} />
