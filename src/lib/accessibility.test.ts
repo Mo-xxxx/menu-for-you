@@ -11,8 +11,8 @@ import { outputsOf } from "@/components/DishSummary";
 
 describe("accessibility settings", () => {
   beforeEach(() => {
-    window.localStorage.clear();
     resetSettings();
+    window.localStorage.clear();
   });
 
   it("starts high contrast with large text, as the app's own default", () => {
