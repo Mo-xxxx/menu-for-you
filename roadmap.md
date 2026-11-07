@@ -1,4 +1,4 @@
 - [x] Real menu pages with website/photo import and person review
 - [x] Read-aloud for menu page, reviews and summaries; show all prices (budget open)
 - [x] Storage: already on with the backend
-- [ ] Replace sample restaurants with real website menus
+- [x] Replace sample restaurants with real website menus
