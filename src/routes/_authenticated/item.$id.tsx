@@ -13,7 +13,7 @@ import { audioSummary, CONFIDENCE_LABEL, dietMatchText, formatDistance, formatPr
 
 export const Route = createFileRoute("/_authenticated/item/$id")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? "") }),
-  head: () => ({ meta: [{ title: "Dish details — Dining Assistant" }, { name: "description", content: "Full ingredients and allergen information for this dish." }] }),
+  head: () => ({ meta: [{ title: "Dish details — Dining Assistant" }, { name: "description", content: "Full ingredients and allergen information for this dish." }, { property: "og:title", content: "Dish details — Dining Assistant" }, { property: "og:description", content: "Full ingredients and allergen information for this dish." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: Item,
 });
 
@@ -23,7 +23,7 @@ function Item() {
   const { userId } = Route.useRouteContext();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
-  const { data, isLoading } = useSafeItems(ctx);
+  const { data, isLoading, error, refetch } = useSafeItems(ctx);
   const { speak } = useSpeech();
   const it = data?.items.find((x) => x.item_id === id);
 
@@ -42,18 +42,18 @@ function Item() {
   const conf = it ? CONFIDENCE_LABEL[it.allergen_confidence] : null;
   return (
     <Screen step={4} total={4} title={it?.item_name ?? "Dish details"} onBack={() => navigate({ to: "/top", search: { ctx } })}>
-      {isLoading ? <p role="status" className="text-xl">Loading…</p> : !it ? (
+      {isLoading ? <p role="status" className="text-xl">Loading…</p> : error ? <><p role="alert" className="text-lg">This dish couldn't load. Please try again.</p><Button variant="big" size="xl" onClick={() => void refetch()}>Try again</Button></> : !it ? (
         <p role="alert" className="text-lg">This dish is not available for your settings.</p>
       ) : (
         <>
           {outputsOf(profile).includes("pictures") && <PictureSummary price={it.price} distance={it.distance_m} dietText={dietMatchText(it.diet_tags, profile?.diet_tags ?? [])} ingredients={it.key_ingredients} />}
           <p className="text-xl">{formatPrice(it.price)} · {formatDistance(it.distance_m)} · {it.restaurant_name}</p>
           <p className="text-lg">✓ {dietMatchText(it.diet_tags, profile?.diet_tags ?? [])}</p>
-          <p className="text-lg"><strong>Why:</strong> {reasonText(it.reason_code, data!.ctx.weather, data!.ctx.mood)}</p>
+          <p className="text-lg"><strong>Why:</strong> {data && reasonText(it.reason_code, data.ctx.weather, data.ctx.mood)}</p>
 
           <section aria-labelledby="conf" className="rounded-xl border-2 border-foreground bg-card p-4">
-            <h2 id="conf" className="text-xl font-bold">Allergen information: <span className="rounded-md border-2 border-foreground px-2">{conf!.label}</span></h2>
-            <p className="mt-1 text-lg">{conf!.desc}</p>
+            <h2 id="conf" className="text-xl font-bold">Allergen information: <span className="rounded-md border-2 border-foreground px-2">{conf?.label}</span></h2>
+            <p className="mt-1 text-lg">{conf?.desc}</p>
           </section>
 
           <div role="alert" className="flex gap-3 rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">

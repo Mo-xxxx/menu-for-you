@@ -12,7 +12,7 @@ import { useProfile } from "@/lib/use-profile";
 import { ALLERGY_OPTIONS, DIET_OPTIONS, formatDistance, parseAllergies, parseBudget, parseDiet, parseDistance, walkMinutes } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/setup")({
-  head: () => ({ meta: [{ title: "Your food settings — Dining Assistant" }, { name: "description", content: "Set your diet, allergies, budget and distance." }] }),
+  head: () => ({ meta: [{ title: "Your food settings — Dining Assistant" }, { name: "description", content: "Set your diet, allergies, budget and distance." }, { property: "og:title", content: "Your food settings — Dining Assistant" }, { property: "og:description", content: "Set your diet, allergies, budget and distance." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: Setup,
 });
 

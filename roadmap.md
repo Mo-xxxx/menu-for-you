@@ -2,3 +2,6 @@
 - [x] Read-aloud for menu page, reviews and summaries; show all prices (budget open)
 - [x] Storage: already on with the backend
 - [x] Replace sample restaurants with real website menus
+- [x] Verify signed-in mood → nearby → real menu → suggestions navigation; repair context loss, stale menu counts, and empty/error dead ends
+- [ ] Verify populated suggestions and dish actions — blocked until a person confirms real-menu dishes matching the profile
+- [ ] Verify Google map rendering — Google rejects the local test origin; requires an authorized origin

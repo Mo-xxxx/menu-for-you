@@ -14,7 +14,7 @@ import { useProfile } from "@/lib/use-profile";
 import { estimateWeather, timeOfDay } from "@/lib/dining";
 
 export const Route = createFileRoute("/_authenticated/request")({
-  head: () => ({ meta: [{ title: "What would you like? — Dining Assistant" }, { name: "description", content: "Pick your mood or say what you'd like to eat." }] }),
+  head: () => ({ meta: [{ title: "What would you like? — Dining Assistant" }, { name: "description", content: "Pick your mood or say what you'd like to eat." }, { property: "og:title", content: "What would you like? — Dining Assistant" }, { property: "og:description", content: "Pick your mood or say what you'd like to eat." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: RequestPage,
 });
 

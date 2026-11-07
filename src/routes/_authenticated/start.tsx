@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useProfile } from "@/lib/use-profile";
 
 export const Route = createFileRoute("/_authenticated/start")({
-  head: () => ({ meta: [{ title: "Loading — Dining Assistant" }] }),
+  head: () => ({ meta: [{ title: "Loading — Dining Assistant" }, { name: "description", content: "Continue to your food settings or start a Dining Assistant request." }, { property: "og:title", content: "Loading — Dining Assistant" }, { property: "og:description", content: "Continue to your food settings or start a Dining Assistant request." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" } ] }),
   component: Start,
 });
 
