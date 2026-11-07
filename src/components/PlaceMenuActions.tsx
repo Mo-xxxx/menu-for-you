@@ -9,7 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { importMenuFromWebsite } from "@/lib/menu-website.functions";
 
 /** For a real place: link to its menu page if one exists, and a button to read its website menu. */
-export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: string }) {
+export function PlaceMenuActions({ placeId, placeName, marker, ctx }: { placeId: string; placeName: string; marker?: string; ctx: string }) {
+  const menuLabel = `${marker ? `Map ${marker} · ` : ""}${placeName}`;
   const qc = useQueryClient();
   const { speak } = useSpeech();
   const importFn = useServerFn(importMenuFromWebsite);
@@ -26,11 +27,12 @@ export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: strin
 
   async function readWebsite() {
     setState({ status: "reading" });
+    speak(`Reading the menu for ${menuLabel}.`);
     try {
       const r = await importFn({ data: { placeId } });
       if (!r.ok) { setState({ status: "error", message: r.error }); speak(r.error); return; }
-      setState({ status: "done", message: `I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.` });
-      speak(`I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.`);
+      setState({ status: "done", message: `${menuLabel}: I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.` });
+      speak(`${menuLabel}: I found ${r.saved} dishes on the website. A person must confirm them before I suggest any.`);
       qc.invalidateQueries({ queryKey: ["place-menu", placeId] });
       qc.invalidateQueries({ queryKey: ["place-menu-status"] });
       qc.invalidateQueries({ queryKey: ["menus-on-file"] });
@@ -44,10 +46,10 @@ export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: strin
   const m = existing.data;
   return (
     <section aria-labelledby="menu-actions" className="flex flex-col gap-3">
-      <h2 id="menu-actions" className="text-2xl font-bold">Menu</h2>
+      <h2 id="menu-actions" className="text-2xl font-bold">Menu · {menuLabel}</h2>
       {m && m.total > 0 && (
         <Button asChild variant="big" size="xl" className="justify-center">
-          <Link to="/restaurant/$id" params={{ id: m.id }} search={{ ctx }}>
+          <Link to="/restaurant/$id" params={{ id: m.id }} search={{ ctx, marker }}>
             Open menu page · {m.confirmed} of {m.total} checked
           </Link>
         </Button>
@@ -56,7 +58,7 @@ export function PlaceMenuActions({ placeId, ctx }: { placeId: string; ctx: strin
         <Globe aria-hidden /> {state.status === "reading" ? "Reading the website…" : "Find menu on their website"}
       </Button>
       <div aria-live="polite" className="min-h-6 text-lg">
-        {state.status === "reading" && <p>This can take up to a minute. I only keep menus dated this year or the last few months.</p>}
+        {state.status === "reading" && <p>Reading the menu for <strong>{menuLabel}</strong>…</p>}
         {state.status === "error" && <p role="alert" className="font-bold">{state.message}</p>}
         {state.status === "done" && <p className="font-bold">{state.message}</p>}
       </div>

@@ -20,7 +20,8 @@ async function toJpegDataUrl(file: File, max = 1600): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
-export function MenuPhotoUpload({ placeId, placeName, ctx }: { placeId: string; placeName: string; ctx: string }) {
+export function MenuPhotoUpload({ placeId, placeName, marker, ctx }: { placeId: string; placeName: string; marker?: string; ctx: string }) {
+  const menuLabel = `${marker ? `Map ${marker} · ` : ""}${placeName}`;
   const input = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
   const { speak } = useSpeech();
@@ -44,6 +45,7 @@ export function MenuPhotoUpload({ placeId, placeName, ctx }: { placeId: string; 
   async function read() {
     if (photos.length === 0) return;
     setState({ status: "reading" });
+    speak(`Reading menu photos for ${menuLabel}.`);
     try {
       const r = await extract({ data: { placeId, images: photos } });
       if (!r.ok) { setState({ status: "error", message: r.error }); return; }
@@ -60,7 +62,7 @@ export function MenuPhotoUpload({ placeId, placeName, ctx }: { placeId: string; 
 
   return (
     <section aria-labelledby="menu-photo" className="flex flex-col gap-3">
-      <h2 id="menu-photo" className="text-2xl font-bold">Add menu photos</h2>
+      <h2 id="menu-photo" className="text-2xl font-bold">Add menu photos · {menuLabel}</h2>
       <p className="text-lg">Add up to 4 clear photos of {placeName}'s menu, one page at a time. AI will read the dishes so I can check them against your needs.</p>
       <input ref={input} id="menu-photo-input" type="file" multiple accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" onChange={(e) => onFiles(e.target.files)} />
       {photos.length > 0 && (
@@ -87,13 +89,13 @@ export function MenuPhotoUpload({ placeId, placeName, ctx }: { placeId: string; 
         </Button>
       )}
       <div aria-live="polite" className="min-h-6">
-        {state.status === "reading" && <p className="text-lg">This can take up to a minute. Please wait.</p>}
+        {state.status === "reading" && <p className="text-lg">Reading menu photos for <strong>{menuLabel}</strong>…</p>}
         {state.status === "error" && <p role="alert" className="text-lg font-bold text-destructive">{state.message}</p>}
         {state.status === "done" && (
           <div className="flex flex-col gap-3">
-            <p className="text-lg font-bold">I read {state.dishes?.length} dishes and saved {state.saved} with prices. They now wait for a person to confirm them.</p>
+            <p className="text-lg font-bold">{menuLabel}: I read {state.dishes?.length} dishes and saved {state.saved} with prices. They now wait for a person to confirm them.</p>
             <Button variant="bigOutline" size="xl" className="justify-center" onClick={() => speak([`I read ${state.dishes?.length} dishes. These are AI-inferred and not guaranteed safe.`, ...(state.dishes ?? []).map((d) => menuDishSpeech({ name: d.name, price: d.price, diet_tags: d.diet_tags, ingredients: d.ingredients.map((i) => i.name), status: "pending" }))].join(" "))}><Volume2 aria-hidden /> Listen to what I found</Button>
-            {state.restaurantId && <Button asChild variant="big" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: state.restaurantId }} search={{ ctx }}>Check these dishes</Link></Button>}
+            {state.restaurantId && <Button asChild variant="big" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: state.restaurantId }} search={{ ctx, marker }}>Check these dishes</Link></Button>}
             <div className="flex gap-3 rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
               <AlertTriangle aria-hidden className="size-8 shrink-0" />
               <p><strong>AI-inferred and unverified — not guaranteed safe.</strong> AI can misread menus and miss allergens. Always confirm allergens with the restaurant.</p>

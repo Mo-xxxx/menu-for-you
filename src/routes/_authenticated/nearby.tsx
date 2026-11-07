@@ -95,16 +95,17 @@ function Nearby() {
   const statusText = (id: string) => { const st = menuStatus.data?.get(id); return st ? `Menu on file · ${st.confirmed} of ${st.total} dishes checked` : "No menu found yet"; };
   const onSelect = useCallback((id: string) => {
     if (mappedMenus.some((r) => r.id === id) || groups.some((g) => g.id === id)) {
-      void navigate({ to: "/restaurant/$id", params: { id }, search: { ctx } });
+      void navigate({ to: "/restaurant/$id", params: { id }, search: { ctx, marker: mapPlaces.find((p) => p.id === id)?.label } });
       return;
     }
     setSelected(id);
-  }, [mappedMenus, groups, navigate, ctx]);
+  }, [mappedMenus, groups, navigate, ctx, mapPlaces]);
   const sel = groups.find((g) => g.id === selected);
   const selOther = selected && !sel ? live.data?.places.find((p) => p.id === selected) : undefined;
+  const selectedMarker = mapPlaces.find((p) => p.id === selected)?.label;
 
   return (
-    <Screen step={2} total={4} title={sel ? sel.name : selOther ? selOther.name : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
+    <Screen step={2} total={4} title={sel || selOther ? `${selectedMarker ? `${selectedMarker}. ` : ""}${sel?.name ?? selOther?.name}` : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
       {isLoading || !loc ? <p role="status" className="text-xl">Finding safe food near you…</p>
         : error ? <p role="alert" className="text-xl text-destructive">Something went wrong. Please go back and try again.</p>
         : groups.length === 0 && others.length === 0 && (menus.data?.length ?? 0) === 0 && !live.isLoading && !menus.isLoading ? (
@@ -115,14 +116,14 @@ function Nearby() {
             <p className="rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
               <strong>{menuStatus.data?.has(selOther.id) ? "Menu waiting for a person to check." : "No menu found yet."}</strong> Until a person confirms the dishes, I can't tell you which are safe for you. Please ask the restaurant, find the menu on their website, or add a menu photo below. A person must confirm the dishes before I suggest them.
             </p>
-            <PlaceMenuActions placeId={selOther.id} ctx={ctx} />
-            <MenuPhotoUpload placeId={selOther.id} placeName={selOther.name} ctx={ctx} />
+            <PlaceMenuActions key={selOther.id} placeId={selOther.id} placeName={selOther.name} marker={selectedMarker} ctx={ctx} />
+            <MenuPhotoUpload key={selOther.id} placeId={selOther.id} placeName={selOther.name} marker={selectedMarker} ctx={ctx} />
           </>
         ) : sel ? (
           <>
             <p className="text-lg">{sel.cuisine} · {formatDistance(sel.distance)} · about {walkMinutes(sel.distance)} min walk</p>
             <p className="text-lg">Only dishes that are safe for you are shown.</p>
-            <Button asChild variant="bigOutline" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: sel.id }} search={{ ctx }}>See the full menu</Link></Button>
+            <Button asChild variant="bigOutline" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: sel.id }} search={{ ctx, marker: selectedMarker }}>See the full menu</Link></Button>
             <ul className="flex flex-col gap-3">
               {sel.items.map((it) => (
                 <li key={it.item_id}>
@@ -145,7 +146,7 @@ function Nearby() {
               <p className="text-lg">These are menus to review, not food suggestions. Only person-checked dishes within your distance, budget, diet and allergy settings can reach your best 3.</p>
               <ul className="flex flex-col gap-3">{menus.data?.map((r) => {
                 const marker = mapPlaces.find((p) => p.id === r.id);
-                return <li key={r.id}><Button asChild variant="bigOutline" size="xl"><Link to="/restaurant/$id" params={{ id: r.id }} search={{ ctx }}>{marker && <span aria-label={`Map marker ${marker.label}`} className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground">{marker.label}</span>}Open {r.name} menu</Link></Button></li>;
+                return <li key={r.id}><Button asChild variant="bigOutline" size="xl"><Link to="/restaurant/$id" params={{ id: r.id }} search={{ ctx, marker: marker?.label }}>{marker && <span aria-label={`Map marker ${marker.label}`} className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground">{marker.label}</span>}Open {r.name} menu</Link></Button></li>;
               })}</ul>
             </>}
             {menus.error && <p role="alert" className="text-lg">Saved menus couldn't load. Please try again.</p>}
