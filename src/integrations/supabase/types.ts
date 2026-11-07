@@ -169,6 +169,7 @@ export type Database = {
       }
       menu_items: {
         Row: {
+          added_by: string | null
           allergen_confidence: string
           audio_summary_text: string
           diet_tags: string[]
@@ -177,10 +178,12 @@ export type Database = {
           name: string
           price: number
           restaurant_id: string
+          source: string
           summary_text: string
           warm: boolean
         }
         Insert: {
+          added_by?: string | null
           allergen_confidence?: string
           audio_summary_text?: string
           diet_tags?: string[]
@@ -189,10 +192,12 @@ export type Database = {
           name: string
           price: number
           restaurant_id: string
+          source?: string
           summary_text?: string
           warm?: boolean
         }
         Update: {
+          added_by?: string | null
           allergen_confidence?: string
           audio_summary_text?: string
           diet_tags?: string[]
@@ -201,6 +206,7 @@ export type Database = {
           name?: string
           price?: number
           restaurant_id?: string
+          source?: string
           summary_text?: string
           warm?: boolean
         }
@@ -262,6 +268,7 @@ export type Database = {
       restaurants: {
         Row: {
           cuisine: string
+          google_place_id: string | null
           id: string
           lat: number
           lng: number
@@ -273,6 +280,7 @@ export type Database = {
         }
         Insert: {
           cuisine?: string
+          google_place_id?: string | null
           id?: string
           lat: number
           lng: number
@@ -284,6 +292,7 @@ export type Database = {
         }
         Update: {
           cuisine?: string
+          google_place_id?: string | null
           id?: string
           lat?: number
           lng?: number
