@@ -19,10 +19,7 @@ export const profileQuery = queryOptions({
 export function useProfile() {
   const q = useQuery(profileQuery);
   useEffect(() => {
-    const p = q.data;
-    if (!p) return;
-    document.documentElement.dataset['textSize'] = p.text_size;
-    document.documentElement.dataset['contrast'] = p.high_contrast ? "high" : "standard";
+    seedFromProfile(q.data);
   }, [q.data]);
   return q;
 }
