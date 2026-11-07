@@ -50,3 +50,12 @@ describe("spoken mood", () => {
   it("mixed feelings are okay", () => expect(mfw("happy but tired")).toBe("okay"));
   it("cold weather is not a mood", () => expect(mfw("it's cold, want soup")).toBe("okay"));
 });
+
+import { dishGroup } from "./dining";
+it("classifies dishes into veg, fish, chicken and meat groups", () => {
+  expect(dishGroup({ item_name: "Grilled salmon", diet_tags: [], key_ingredients: [] })).toBe("Fish and seafood");
+  expect(dishGroup({ item_name: "Curry", diet_tags: [], key_ingredients: ["chicken"] })).toBe("Chicken");
+  expect(dishGroup({ item_name: "Pizza", diet_tags: [], key_ingredients: ["pepperoni"] })).toBe("Meat");
+  expect(dishGroup({ item_name: "Dal", diet_tags: ["vegan"], key_ingredients: ["lentils"] })).toBe("Vegan");
+  expect(dishGroup({ item_name: "Margherita", diet_tags: ["vegetarian"], key_ingredients: [] })).toBe("Vegetarian");
+});
