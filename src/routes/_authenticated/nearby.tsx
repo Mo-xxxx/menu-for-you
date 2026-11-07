@@ -7,6 +7,7 @@ import { Screen } from "@/components/Screen";
 import { LiveMap, type MapPlace } from "@/components/LiveMap";
 import { nearbyPlaces } from "@/lib/maps.functions";
 import { MenuPhotoUpload } from "@/components/MenuPhotoUpload";
+import { PlaceMenuActions } from "@/components/PlaceMenuActions";
 import { supabase } from "@/integrations/supabase/client";
 import { useSafeItems } from "@/lib/use-safe-items";
 import { useProfile } from "@/lib/use-profile";
@@ -71,14 +72,16 @@ function Nearby() {
           <>
             <p className="text-lg">{selOther.type}{selOther.openNow === null ? "" : selOther.openNow ? " · Open now" : " · Closed now"}</p>
             <p className="rounded-xl border-2 border-foreground bg-warning p-4 text-lg text-warning-foreground">
-              <strong>Menu not checked yet.</strong> I don't have this place's menu, so I can't tell you which dishes are safe for you. Please ask the restaurant directly, or add a menu photo below.
+              <strong>Menu not checked yet.</strong> I don't have this place's menu, so I can't tell you which dishes are safe for you. Please ask the restaurant, find the menu on their website, or add a menu photo below. A person must confirm the dishes before I suggest them.
             </p>
+            <PlaceMenuActions placeId={selOther.id} ctx={ctx} />
             <MenuPhotoUpload placeId={selOther.id} placeName={selOther.name} />
           </>
         ) : sel ? (
           <>
             <p className="text-lg">{sel.cuisine} · {formatDistance(sel.distance)} · about {walkMinutes(sel.distance)} min walk</p>
             <p className="text-lg">Only dishes that are safe for you are shown.</p>
+            <Button asChild variant="bigOutline" size="xl" className="justify-center"><Link to="/restaurant/$id" params={{ id: sel.id }} search={{ ctx }}>See the full menu</Link></Button>
             <ul className="flex flex-col gap-3">
               {sel.items.map((it) => (
                 <li key={it.item_id}>

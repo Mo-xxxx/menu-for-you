@@ -28,3 +28,14 @@ describe("live weather classification", () => {
   it("treats rain as rain whatever the temperature", () => expect(classifyWeather(18, "LIGHT_RAIN", "Light rain").kind).toBe("rain"));
   it("treats over 20°C as warm", () => expect(classifyWeather(24, "CLEAR", "Clear").kind).toBe("warm"));
 });
+
+import { menuDishSpeech, menuOverviewSpeech } from "./dining";
+describe("menu read-aloud", () => {
+  it("reads name, price, diet, ingredients, then status in that order", () => {
+    const t = menuDishSpeech({ name: "Lentil soup", price: 6.5, diet_tags: ["vegan"], ingredients: ["lentils", "carrot"], status: "pending" });
+    const idx = ["Lentil soup", "£6.50", "vegan", "lentils", "Not checked yet"].map((w) => t.indexOf(w));
+    expect(idx.every((v, i) => v >= 0 && (i === 0 || v > idx[i - 1]!))).toBe(true);
+  });
+  it("gives the full price range, not limited by budget", () =>
+    expect(menuOverviewSpeech({ name: "Cafe", total: 3, confirmed: 1, cheapest: 4, dearest: 28 })).toContain("from £4.00 to £28.00"));
+});
