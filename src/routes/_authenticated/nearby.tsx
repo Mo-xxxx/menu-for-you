@@ -51,7 +51,7 @@ function Nearby() {
   const safeNames = new Set(groups.map((g) => g.name.toLowerCase()));
   const others = (live.data?.places ?? []).filter((p) => !safeNames.has(p.name.toLowerCase()));
   const mapPlaces: MapPlace[] = useMemo(() => {
-    const showSample = loc?.real ?? false;
+    const showSample = true;
     const a = showSample ? groups.map((g, i) => { const c = coords?.find((x) => x.id === g.id); return c ? { id: g.id, name: g.name, lat: c.lat, lng: c.lng, label: String(i + 1) } : null; }).filter(Boolean) as MapPlace[] : [];
     const start = showSample ? groups.length : 0;
     return [...a, ...others.map((p, i) => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, label: String(start + i + 1) }))];
@@ -59,7 +59,7 @@ function Nearby() {
   }, [groups, coords, live.data, loc?.real]);
   const onSelect = useCallback((id: string) => setSelected(id), []);
   const sel = groups.find((g) => g.id === selected);
-  const selOther = others.find((p) => p.id === selected);
+  const selOther = selected && !sel ? live.data?.places.find((p) => p.id === selected) : undefined;
 
   return (
     <Screen step={2} total={4} title={sel ? sel.name : selOther ? selOther.name : "Places near you"} onBack={() => (sel || selOther ? setSelected(null) : navigate({ to: "/request" }))}>
@@ -95,7 +95,6 @@ function Nearby() {
             <LiveMap center={loc.actual} radius={radius} places={mapPlaces} selected={selected} onSelect={onSelect} />
             {live.data?.error && <p role="status" className="text-lg">{live.data.error}</p>}
             <h2 className="text-2xl font-bold">Safe dishes for you</h2>
-            {!loc.real && <p className="rounded-xl bg-warning p-3 text-lg text-warning-foreground">Checked menus are only available in central London for now, so these are sample places there.</p>}
             {groups.length === 0 && <p className="text-lg">No checked menus match your needs nearby.</p>}
             <ol className="flex flex-col gap-3">
               {groups.map((g, i) => (
@@ -111,11 +110,11 @@ function Nearby() {
               <>
                 <h2 className="text-2xl font-bold">Other places nearby</h2>
                 <p className="text-lg">Menus not checked yet — I can't confirm these are safe.</p>
-                <ol start={(loc.real ? groups.length : 0) + 1} className="flex flex-col gap-3">
+                <ol start={groups.length + 1} className="flex flex-col gap-3">
                   {others.map((p, i) => (
                     <li key={p.id}>
                       <button onClick={() => setSelected(p.id)} className="flex w-full items-center gap-4 rounded-2xl border-2 border-dashed border-foreground bg-card p-4 text-left text-lg hover:bg-secondary">
-                        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-card font-bold">{(loc.real ? groups.length : 0) + i + 1}</span>
+                        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-foreground bg-card font-bold">{groups.length + i + 1}</span>
                         <span><span className="block text-xl font-bold">{p.name}</span>{p.type}{p.openNow === null ? "" : p.openNow ? " · Open now" : " · Closed now"} · Menu not checked</span>
                       </button>
                     </li>
