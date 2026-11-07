@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, menuDishSpeech, menuOverviewSpeech } from "@/lib/dining";
+import { FavouriteMenuButton } from "@/components/FavouriteMenus";
 
 export const Route = createFileRoute("/_authenticated/restaurant/$id")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? ""), marker: /^\d+$/.test(String(s["marker"] ?? "")) ? String(s["marker"]) : undefined }),
@@ -27,6 +28,7 @@ type Dish = { id: string; name: string; price: number; summary_text: string; die
 
 function MenuPage() {
   const { id } = Route.useParams();
+  const { userId } = Route.useRouteContext();
   const { ctx, marker } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -74,6 +76,7 @@ function MenuPage() {
     <Screen step={2} total={4} title={r ? `${marker ? `${marker}. ` : ""}${r.name}` : "Menu"} onBack={() => navigate({ to: "/nearby", search: { ctx } })}>
       {q.isLoading ? <p role="status" className="text-xl">Loading the menu…</p> : q.error ? <><p role="alert" className="text-xl">The menu couldn't load. Please try again.</p><Button variant="big" size="xl" onClick={() => void q.refetch()}>Try again</Button></> : !r ? <p role="alert" className="text-xl">I couldn't find this restaurant.</p> : (
         <>
+          <FavouriteMenuButton userId={userId} restaurantId={id} name={r.name} />
           <p className="text-lg">{r.cuisine}{r.menu_dated ? ` · ${r.menu_dated}` : ""}</p>
           {r.menu_source_url && <p className="text-lg">From: <a className="underline" href={r.menu_source_url} target="_blank" rel="noreferrer">the restaurant's website</a></p>}
           <div role="status" className={`flex items-center gap-3 rounded-xl border-2 border-foreground p-4 text-lg ${confirmed > 0 ? "bg-card" : "bg-warning text-warning-foreground"}`}>
