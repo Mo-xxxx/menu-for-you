@@ -16,3 +16,5 @@
 - [ ] Stage 4: favourite → personal versioned menu file (edit, undo, download, delete, upstream-change notice)
 - [x] Connect the app to the AI4A11y accessibility toolkit (live adapter control + token)
 - [x] Summarise all saved personal data in the final record, with read-aloud and a complete download; signed-in download and mobile display verified
+- [ ] Record explicit restaurant choices privately and include them in the final personal record
+- [ ] Improve dietary and favourite-aware recommendations and restaurant menu reading using the uploaded reference without weakening database safety checks
