@@ -8,12 +8,13 @@ const data: PersonalData = {
   contexts: [{ id: "ctx", user_id: "me", mood: "low", weather: "rain", time_of_day: "lunch", distance_m: 300, request_text: "warm soup", created_at: "2026-11-07T12:00:00Z" }],
   learned_preferences: [{ id: "pref", user_id: "me", kind: "cuisine", value: "Thai", weight: 2, user_override: true }],
   favourite_menus: [{ user_id: "me", restaurant_id: "restaurant", created_at: "2026-11-07T12:00:00Z", restaurants: { name: "Favourite restaurant" } }],
+  restaurant_choices: [{ id: "choice", user_id: "me", restaurant_id: "restaurant", context_id: "ctx", created_at: "2026-11-07T12:00:00Z", restaurants: { name: "Chosen restaurant" } }],
 };
 
 describe("final personal record", () => {
   it("keeps all original saved data alongside its summary", () => {
     const record = buildDataRecord(data, DEFAULT_SETTINGS, "2026-11-07T13:00:00Z");
-    for (const key of ["profile", "events", "contexts", "learned_preferences", "favourite_menus"] as const) expect(record[key]).toEqual(data[key]);
+    for (const key of ["profile", "events", "contexts", "learned_preferences", "favourite_menus", "restaurant_choices"] as const) expect(record[key]).toEqual(data[key]);
     expect(record.generated_at).toBe("2026-11-07T13:00:00Z");
   });
   it("counts recorded moods and actions without inventing preferences", () => {
@@ -27,5 +28,11 @@ describe("final personal record", () => {
     expect(record.device_accessibility.captions).toBe(true);
     expect(Object.keys(record.device_accessibility).sort()).toEqual(Object.keys(DEFAULT_SETTINGS).sort());
     expect(record.summary.find(s => s.title === "Favourite menus")?.text).toContain("Favourite restaurant");
+  });
+  it("records the chosen restaurant with its request mood", () => {
+    const record = buildDataRecord(data, DEFAULT_SETTINGS, "now");
+    expect(record.restaurant_choices[0]?.restaurant_id).toBe("restaurant");
+    expect(record.restaurant_choices[0]?.context_id).toBe("ctx");
+    expect(record.summary.find(s => s.title === "Restaurant choices")?.text).toContain("Chosen restaurant, 07/11/2026, 12:00:00 UTC, mood: low");
   });
 });

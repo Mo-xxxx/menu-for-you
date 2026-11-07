@@ -11,6 +11,8 @@ import { Screen } from "@/components/Screen";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, menuDishSpeech, menuOverviewSpeech } from "@/lib/dining";
 import { FavouriteMenuButton } from "@/components/FavouriteMenus";
+import { RestaurantChoiceButton } from "@/components/RestaurantChoiceButton";
+import { MenuRecommendations } from "@/components/MenuRecommendations";
 
 export const Route = createFileRoute("/_authenticated/restaurant/$id")({
   validateSearch: (s: Record<string, unknown>) => ({ ctx: String(s["ctx"] ?? ""), marker: /^\d+$/.test(String(s["marker"] ?? "")) ? String(s["marker"]) : undefined }),
@@ -79,6 +81,7 @@ function MenuPage() {
       {q.isLoading ? <p role="status" className="text-xl">Loading the menu…</p> : q.error ? <><p role="alert" className="text-xl">The menu couldn't load. Please try again.</p><Button variant="big" size="xl" onClick={() => void q.refetch()}>Try again</Button></> : !r ? <p role="alert" className="text-xl">I couldn't find this restaurant.</p> : (
         <>
           <FavouriteMenuButton userId={userId} restaurantId={id} name={r.name} />
+          <RestaurantChoiceButton userId={userId} restaurantId={id} name={r.name} ctx={ctx} />
           <p className="text-lg">{r.cuisine}{r.menu_dated ? ` · ${r.menu_dated}` : ""}</p>
           {r.menu_source_url && <p className="text-lg">From: <a className="underline" href={r.menu_source_url} target="_blank" rel="noreferrer">the restaurant's website</a></p>}
           <div role="status" className={`flex items-center gap-3 rounded-xl border-2 border-foreground p-4 text-lg ${confirmed > 0 ? "bg-card" : "bg-warning text-warning-foreground"}`}>
@@ -92,6 +95,7 @@ function MenuPage() {
             <Button variant="bigOutline" size="tap" disabled={live.length === 0} onClick={() => speak([overview, ...live.map(dishText)].join(" "))}><Volume2 aria-hidden /> Read whole menu</Button>
           </div>
           <p className="text-lg">All dishes and prices are shown here, whatever your budget.</p>
+          <MenuRecommendations restaurantId={id} ctx={ctx} diet={profile?.diet_tags ?? []} />
           <Button asChild variant="big" size="xl"><Link to={ctx ? "/top" : "/request"} search={ctx ? { ctx } : {}}> {ctx ? "Check my best 3" : "Start a food request"}</Link></Button>
           {!isSample && (
             <p className="flex gap-3 rounded-xl border-2 border-foreground bg-card p-4 text-lg">

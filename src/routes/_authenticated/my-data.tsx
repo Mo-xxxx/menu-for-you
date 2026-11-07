@@ -53,6 +53,12 @@ function MyData() {
     qc.invalidateQueries({ queryKey: ["personal-data-record", userId] });
     toast.success("Learning reset. Your allergies and diet are unchanged.");
   }
+  async function removeChoice(id: string) {
+    const result = await supabase.from("restaurant_choices").delete().eq("id", id).eq("user_id", userId);
+    if (result.error) { toast.error("Could not remove your choice. Please try again."); return; }
+    await qc.invalidateQueries({ queryKey: ["personal-data-record", userId] });
+    speak("Restaurant choice removed from your record.");
+  }
   async function exportData() {
     setExporting(true);
     try {
@@ -89,6 +95,14 @@ function MyData() {
           {record.summary.map(section => <div key={section.title} className="min-w-0 border-b border-border pb-3"><h3 className="font-bold">{section.title}</h3><p className="break-words">{section.text}</p></div>)}
         </>}
       </section>
+      {recordQuery.data && recordQuery.data.restaurant_choices.length > 0 && <section aria-labelledby="choice-history" className="flex flex-col gap-3">
+        <h2 id="choice-history" className="text-2xl font-bold">My restaurant choices</h2>
+        <ul className="flex flex-col gap-3">{[...recordQuery.data.restaurant_choices].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(choice => <li key={choice.id} className="flex flex-col gap-2 border-b border-border pb-3">
+          <Button asChild variant="bigOutline" size="tap"><Link to="/restaurant/$id" params={{ id: choice.restaurant_id }} search={{ ctx: choice.context_id ?? "", marker: undefined }}>{choice.restaurants?.name ?? "Restaurant menu"}</Link></Button>
+          <p>{new Date(choice.created_at).toLocaleString("en-GB")}</p>
+          <Button variant="bigOutline" size="tap" aria-label={`Remove choice of ${choice.restaurants?.name ?? "restaurant"}`} onClick={() => void removeChoice(choice.id)}><Trash2 aria-hidden /> Remove choice</Button>
+        </li>)}</ul>
+      </section>}
       <FavouriteMenus userId={userId} />
 
       <section aria-labelledby="needs" className="rounded-2xl border-2 border-foreground bg-card p-4 text-lg">

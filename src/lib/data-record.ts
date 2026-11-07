@@ -8,6 +8,7 @@ export type PersonalData = {
   contexts: Tables<"context_snapshots">[];
   learned_preferences: Tables<"learned_preferences">[];
   favourite_menus: (Tables<"favourite_menus"> & { restaurants: { name: string } | null })[];
+  restaurant_choices: (Tables<"restaurant_choices"> & { restaurants: { name: string } | null })[];
 };
 
 export function buildDataRecord(data: PersonalData, settings: AccessSettings, generatedAt: string) {
@@ -28,6 +29,7 @@ export function buildDataRecord(data: PersonalData, settings: AccessSettings, ge
     { title: "Dish activity", text: `${data.events.length} recorded actions. ${Object.entries(actions).map(([type, count]) => `${type}: ${count}`).join(". ") || "No dish activity yet"}.` },
     { title: "Learned preferences", text: data.learned_preferences.length ? data.learned_preferences.map(lp => `${lp.value} (${lp.kind}): ${Number(lp.weight) > 0 ? "preferred" : Number(lp.weight) < 0 ? "less preferred" : "neutral"}, weight ${Number(lp.weight)}${lp.user_override ? ", set by you" : ", learned from activity"}`).join(". ") + "." : "No learned preferences yet." },
     { title: "Favourite menus", text: `${data.favourite_menus.length} saved menus. ${data.favourite_menus.map(f => f.restaurants?.name ?? "Restaurant name unavailable").join(", ") || "No favourites yet"}.` },
+    { title: "Restaurant choices", text: data.restaurant_choices.length ? `${data.restaurant_choices.length} recorded choices. ${[...data.restaurant_choices].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(c => `${c.restaurants?.name ?? "Restaurant name unavailable"}, ${new Date(c.created_at).toLocaleString("en-GB", { timeZone: "UTC" })} UTC${c.context_id ? `, mood: ${data.contexts.find(ctx => ctx.id === c.context_id)?.mood ?? "not recorded"}` : ""}`).join(". ")}.` : "No restaurant choices recorded yet." },
     { title: "Accessibility on this device", text: `Text: ${settings.textSize === "xxl" ? "extra large" : settings.textSize === "xl" ? "large" : "normal"}. High contrast: ${settings.highContrast ? "on" : "off"}. Large tap targets: ${settings.largeTargets ? "on" : "off"}. Reduced motion: ${settings.reduceMotion ? "on" : "off"}. Speech: ${settings.speechRate}. Automatic reading: ${settings.autoRead ? "on" : "off"}. Captions: ${settings.captions ? "on" : "off"}. Picture summaries: ${settings.pictureSummaries ? "on" : "off"}.` },
   ];
   return {

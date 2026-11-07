@@ -33,6 +33,8 @@ export function FavouriteMenuButton({ userId, restaurantId, name }: { userId: st
         : await supabase.from("favourite_menus").insert({ user_id: userId, restaurant_id: restaurantId });
       if (result.error) throw result.error;
       await qc.invalidateQueries({ queryKey: ["favourite-menus", userId] });
+      await qc.invalidateQueries({ queryKey: ["safe"] });
+      await qc.invalidateQueries({ queryKey: ["personal-data-record", userId] });
       const message = saved ? `${name} removed from favourites.` : `${name} menu added to favourites.`;
       toast.success(message);
       speak(message);
