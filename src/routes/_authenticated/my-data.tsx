@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Download, LogOut, Minus, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OUTPUT_OPTIONS, outputsOf } from "@/components/DishSummary";
+import { outputsOf } from "@/components/DishSummary";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/use-profile";
@@ -28,11 +28,6 @@ function MyData() {
     queryFn: async () => (await supabase.from("learned_preferences").select("*").order("weight", { ascending: false })).data ?? [],
   });
 
-  async function updateProfile(patch: { text_size?: string; high_contrast?: boolean; voice_first?: boolean; summary_outputs?: string[] }) {
-    const { error } = await supabase.from("profiles").update(patch).eq("user_id", userId);
-    if (error) { toast.error("Could not save."); return; }
-    qc.invalidateQueries({ queryKey: ["profile"] });
-  }
   async function adjust(id: string, weight: number) {
     await supabase.from("learned_preferences").update({ weight, user_override: true }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["prefs"] });
@@ -62,8 +57,8 @@ function MyData() {
     catch { toast.error("Could not delete. Please try again."); }
   }
 
-  const sizes = [{ id: "normal", label: "Normal" }, { id: "large", label: "Large" }, { id: "xl", label: "Extra large" }];
   return (
+    <main className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 px-5 py-6">
       <Button asChild variant="bigOutline" size="tap" className="self-start"><Link to="/request">← Back to food</Link></Button>
       <h1 className="text-3xl font-bold">My data</h1>
       <FavouriteMenus userId={userId} />
