@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { seedFromProfile } from "@/lib/accessibility";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Profile = Tables<"profiles">;
